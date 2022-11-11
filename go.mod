@@ -6,10 +6,10 @@ require (
 	github.com/gardener/gardener v1.51.1
 	github.com/gardener/machine-controller-manager v0.47.0
 	github.com/google/addlicense v1.0.0
-	github.com/onmetal/controller-utils v0.6.3
+	github.com/onmetal/controller-utils v0.6.4
 	github.com/onmetal/onmetal-api v0.0.13-0.20221031092048-3e47d88a90e9
-	github.com/onsi/ginkgo/v2 v2.3.1
-	github.com/onsi/gomega v1.22.1
+	github.com/onsi/ginkgo/v2 v2.4.0
+	github.com/onsi/gomega v1.23.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.23.0
 	k8s.io/api v0.24.4
@@ -63,7 +63,6 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go4.org/netipx v0.0.0-20220812043211-3cc044ffd68d // indirect
