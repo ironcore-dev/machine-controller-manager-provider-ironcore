@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gardener/gardener v1.51.1
 	github.com/gardener/machine-controller-manager v0.47.0
-	github.com/google/addlicense v1.0.0
+	github.com/google/addlicense v1.1.0
 	github.com/onmetal/controller-utils v0.6.4
 	github.com/onmetal/onmetal-api v0.0.13-0.20221031092048-3e47d88a90e9
 	github.com/onsi/ginkgo/v2 v2.5.1
