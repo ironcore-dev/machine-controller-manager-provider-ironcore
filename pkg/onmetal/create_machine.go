@@ -16,7 +16,6 @@ package onmetal
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -70,7 +69,7 @@ func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 
 func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) (*computev1alpha1.Machine, error) {
 	// Get userData from machine secret
-	userDataSecret, ok := req.Secret.Data["userData"]
+	userData, ok := req.Secret.Data["userData"]
 	if !ok {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find user-data in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
@@ -84,19 +83,17 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 
 	// Construct ignition file config
 	config := &ignition.Config{
-		PasswdHash:     "*", // TODO: handle password for debug later
-		Hostname:       req.Machine.Name,
-		UserdataBase64: base64.StdEncoding.EncodeToString(userDataSecret),
-		SSHKeys:        []string{},
-		InstallPath:    "/var/lib/coreos-install",
+		Hostname: req.Machine.Name,
+		UserData: string(userData),
 	}
 	ignitionContent, err := ignition.File(config)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create ignition file for machine %s: %v", req.Machine.Name, err))
 	}
 
+	ignitionSecretKey := getIgnitionKeyOrDefault(providerSpec.IgnitionSecretKey)
 	ignitionData := map[string][]byte{}
-	ignitionData[providerSpec.IgnitionSecretKey] = []byte(ignitionContent)
+	ignitionData[ignitionSecretKey] = []byte(ignitionContent)
 	ignitionSecret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -116,7 +113,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: d.Namespace,
+			Namespace: string(namespace),
 			Labels: map[string]string{
 				labelKeyProvider: apiv1alpha1.ProviderName,
 				labelKeyApp:      labelValueMachine,
@@ -134,7 +131,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 				LocalObjectReference: corev1.LocalObjectReference{
 					Name: ignitionSecret.Name,
 				},
-				Key: getIgnitionKeyOrDefault(providerSpec.IgnitionSecretKey),
+				Key: ignitionSecretKey,
 			},
 		},
 	}

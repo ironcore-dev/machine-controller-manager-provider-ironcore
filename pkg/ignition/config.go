@@ -16,37 +16,28 @@ package ignition
 
 import (
 	"bytes"
+	_ "embed"
 	"encoding/base64"
 	"fmt"
+	"github.com/Masterminds/sprig"
+	buconfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
 	"strings"
 	"text/template"
 )
 
+var (
+	//go:embed template.yaml
+	IgnitionTemplate string
+)
+
 type Config struct {
-	PasswdHash     string
-	Hostname       string
-	SSHKeys        []string
-	UserdataBase64 string
-	InstallPath    string
+	Hostname string
+	UserData string
 }
 
 func File(config *Config) (string, error) {
-	ignitionTemplate := `
-{
-  "ignition": {"config":{},"timeouts":{},"version":"3.0.0"},
-  "networkd":{"units":[{"contents":"[Match]\nName=ens192\n\n[Network]\nDHCP=no\nLinkLocalAddressing=no\nIPv6AcceptRA=no\n","name":"00-ens192.network"}]},
-  "passwd":{"users":[{"name":"core","passwordHash":"{{.PasswdHash}}","sshAuthorizedKeys":[{{range $index,$elem := .SSHKeys}}{{if $index}},{{end}}"{{$elem}}"{{end}}]}]},
-  "storage": {
-	"directories":[{"filesystem":"root","path":"{{.InstallPath}}","mode":493}],
-	"files":[
-	  {"filesystem":"root","path":"/etc/hostname","contents":{"source":"data:,{{.Hostname}}"},"mode":420},
-	  {"filesystem":"root","path":"{{.InstallPath}}/user_data","contents":{"source":"data:text/plain;charset=utf-8;base64,{{.UserdataBase64}}"},"mode":420}
-	]
-  },
-  "systemd":{}
-}
-`
-	tmpl, err := template.New("ignition").Parse(ignitionTemplate)
+	tmpl, err := template.New("ignition").Funcs(sprig.HermeticTxtFuncMap()).Parse(IgnitionTemplate)
 	if err != nil {
 		return "", fmt.Errorf("failed creating ignition file: %w", err)
 	}
@@ -55,7 +46,13 @@ func File(config *Config) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed creating ignition file while executing template: %w", err)
 	}
-	return buf.String(), nil
+
+	ignition, err := renderButane(buf.Bytes())
+	if err != nil {
+		return "", err
+	}
+
+	return ignition, nil
 }
 
 func PrepareUserData(userdata string, sshKeys []string) (string, error) {
@@ -96,4 +93,18 @@ func addSSHKeysSection(userdata string, sshKeys []string) (string, error) {
 		s = s + fmt.Sprintf("- %q\n", key)
 	}
 	return s, nil
+}
+
+func renderButane(dataIn []byte) (string, error) {
+	// render by butane to json
+	options := common.TranslateBytesOptions{
+		Raw:    true,
+		Pretty: false,
+	}
+	options.NoResourceAutoCompression = true
+	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
+	if err != nil {
+		return "", err
+	}
+	return string(dataOut), nil
 }

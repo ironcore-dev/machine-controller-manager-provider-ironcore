@@ -16,13 +16,14 @@ package main
 
 import (
 	"fmt"
+	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	"os"
 
-	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/scheme"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/client/metrics/prometheus" // for client metric registration
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/app"
-	"github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
+	mcmoptions "github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/reflector/prometheus" // for reflector metric registration
 	_ "github.com/gardener/machine-controller-manager/pkg/util/workqueue/prometheus" // for workqueue metric registration
@@ -30,15 +31,13 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 func main() {
-	s := options.NewMCServer()
+	s := mcmoptions.NewMCServer()
 	s.AddFlags(pflag.CommandLine)
 
 	options := logs.NewOptions()
@@ -48,43 +47,26 @@ func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
 	if err := options.ValidateAndApply(nil); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 
-	drv, err := newDriver(s.ControlKubeconfig)
+	drv, err := newDriver()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 
 	if err := app.Run(ctrl.SetupSignalHandler(), s, drv); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }
 
-func newDriver(kubeconfig string) (driver.Driver, error) {
-	if kubeconfig == "inClusterConfig" {
-		kubeconfig = ""
-	}
-
-	// TODO: add proper namespace handling
-	namespace := "default"
-
-	restConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rest config from kubeconfig %s: %w", kubeconfig, err)
-	}
-
+func newDriver() (driver.Driver, error) {
 	s := runtime.NewScheme()
 	utilruntime.Must(scheme.AddToScheme(s))
-	utilruntime.Must(machinev1alpha1.AddToScheme(s))
-
-	c, err := client.New(restConfig, client.Options{Scheme: s})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new client from rest config: %w", err)
-	}
-
-	return onmetal.NewDriver(c, namespace), nil
+	utilruntime.Must(computev1alpha1.AddToScheme(s))
+	utilruntime.Must(corev1.AddToScheme(s))
+	return onmetal.NewDriver(s), nil
 }

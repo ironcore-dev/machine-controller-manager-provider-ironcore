@@ -1,0 +1,49 @@
+variant: fcos
+version: 1.3.0
+passwd:
+  users:
+    - name: root
+      password_hash: "$6$l0JQPqv0Bm.GFoXz$9NnoHkq2rTMz7R42eBqpOJ2UUOibPt4AGA9AU0TqH50HgAhR26G0Paxyg0ZanG3/m9Uu3gAd4kMJJ8tmrVcHk."
+    - name: admin
+      groups: [ "wheel" ]
+      ssh_authorized_keys: [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQChAhJt7EJnQmyQuz83gmp8kCG0Tp7f8fmCO0T/1/reUcKSkqcYyjv5WEb/LCCvTJoqMyuLbYWZWGAwxec8tcmw404dNaUdfmwwmbWZIigL76hf58BWNRONyt0kd6k9/T/vZS/6WeBXGk0XVpjNfc9pxein2qUfKHNzDiQCRw7K0GFs/BmQEOKiVYRBjsi5yKViW/bU6Kl0rfqSzoXMicpuYYBAPtlMMJy2Cxhxee3LdxXcfFYKSF2TtVjIfgmY9IociHWdi9GxHm0CBvVYWUwBwmE2T3vCWcays/TUBaSL2fiCXj3qoewcMtibh6wgxvuUvLdExPDrp9QWHzJ+P5C+pAFjRkt6wj4KT02JPMdjaTMOhlZfBmMLPxmVIELphRzWS7iN9N9Oml8ULM8sKpRm3qwgAUJhnwjAIgOiDTk7cxGfnwaYrnB/yBdg4uxfcssB8qJPO0YnP+z/CZRdaVJZEz8Zd6ai2LGzN6W40sUFD40UrmaFhgpqGqiaFIXMQh0= ops" ]
+storage:
+  files:
+    - path: /etc/hostname
+      overwrite: yes
+      mode: 0644
+      contents:
+        inline: |
+          {{ .Hostname }}
+    - path: /etc/resolv.conf
+      overwrite: yes
+      mode: 0644
+      contents:
+        inline: |
+          nameserver 8.8.8.8
+          nameserver 1.1.1.1
+    - path: /var/lib/onmetal-cloud-config/init.sh
+      overwrite: yes
+      mode: 0755
+      contents:
+        inline: |
+          {{ .UserData | indent 10 | trim }}
+systemd:
+  units:
+    - name: cloud-config-init.service
+      enabled: true
+      contents: |
+        [Unit]
+        Wants=network-online.target
+        After=network-online.target
+        ConditionPathExists=!/var/lib/onmetal-cloud-config/init.done
+
+        [Service]
+        Type=oneshot
+        ExecStart=/var/lib/onmetal-cloud-config/init.sh
+        ExecStopPost=touch /var/lib/onmetal-cloud-config/init.done
+        Restart=on-failure
+        RestartSec=5
+
+        [Install]
+        WantedBy=multi-user.target
