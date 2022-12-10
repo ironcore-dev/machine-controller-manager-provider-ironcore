@@ -13,7 +13,7 @@ storage:
       mode: 0755
       contents:
         inline: |
-          {{ .UserData | indent 10 | trim }}
+          {{ .UserData | indent 8 | trim }}
 systemd:
   units:
     - name: cloud-config-init.service
