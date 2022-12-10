@@ -79,12 +79,12 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
 
-	// TODO: retrieve ssh keys
-
 	// Construct ignition file config
 	config := &ignition.Config{
-		Hostname: req.Machine.Name,
-		UserData: string(userData),
+		Hostname:         req.Machine.Name,
+		UserData:         string(userData),
+		Ignition:         providerSpec.Ignition,
+		IgnitionOverride: providerSpec.IgnitionOverride,
 	}
 	ignitionContent, err := ignition.File(config)
 	if err != nil {

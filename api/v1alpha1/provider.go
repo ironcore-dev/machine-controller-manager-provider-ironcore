@@ -35,6 +35,7 @@ type ProviderSpec struct {
 	ImagePullSecretRef  *corev1.LocalObjectReference       `json:"imagePullSecretRef,omitempty"`
 	NetworkInterfaces   []computev1alpha1.NetworkInterface `json:"networkInterfaces,omitempty"`
 	Volumes             []computev1alpha1.Volume           `json:"volumes,omitempty"`
-	Ignition            string                             `json:"Ignition,omitempty"`
+	Ignition            string                             `json:"ignition,omitempty"`
+	IgnitionOverride    bool                               `json:"ignitionOverride,omitempty"`
 	IgnitionSecretKey   string                             `json:"ignitionSecretKey,omitempty"`
 }
