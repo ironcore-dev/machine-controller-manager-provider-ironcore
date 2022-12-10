@@ -165,7 +165,7 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
 		DeferCleanup(k8sClient.Delete, ctx, secret)
 
-		drv = NewDriver(k8sClient, ns.Name)
+		drv = NewDriver(scheme.Scheme)
 	})
 
 	AfterEach(func() {

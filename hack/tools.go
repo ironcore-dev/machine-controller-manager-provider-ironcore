@@ -17,6 +17,7 @@
 package hack
 
 import (
+	_ "github.com/gardener/machine-controller-manager/kubernetes/crds"
 	// Use addlicense for adding license headers.
 	_ "github.com/google/addlicense"
 )

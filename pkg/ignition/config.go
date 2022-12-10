@@ -41,12 +41,13 @@ type Config struct {
 func File(config *Config) (string, error) {
 
 	ignitionBase := &map[string]interface{}{}
+	if err := yaml.Unmarshal([]byte(IgnitionTemplate), ignitionBase); err != nil {
+		return "", err
+	}
+	
 	// if ignition was set in providerSpec merge it with our template
 	if config.Ignition != "" {
 		additional := map[string]interface{}{}
-		if err := yaml.Unmarshal([]byte(IgnitionTemplate), ignitionBase); err != nil {
-			return "", err
-		}
 
 		if err := yaml.Unmarshal([]byte(config.Ignition), &additional); err != nil {
 			return "", err
