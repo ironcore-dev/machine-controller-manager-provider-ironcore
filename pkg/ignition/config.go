@@ -44,7 +44,7 @@ func File(config *Config) (string, error) {
 	if err := yaml.Unmarshal([]byte(IgnitionTemplate), ignitionBase); err != nil {
 		return "", err
 	}
-	
+
 	// if ignition was set in providerSpec merge it with our template
 	if config.Ignition != "" {
 		additional := map[string]interface{}{}
