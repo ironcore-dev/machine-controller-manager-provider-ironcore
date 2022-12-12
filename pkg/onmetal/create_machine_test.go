@@ -20,8 +20,8 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
-	commonv1alpha1 "github.com/onmetal/onmetal-api/apis/common/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	commonv1alpha1 "github.com/onmetal/onmetal-api/api/common/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	"github.com/onmetal/onmetal-api/testutils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -59,10 +59,8 @@ var _ = Describe("CreateMachine", func() {
 				NetworkInterfaces:   nil,
 				Volumes:             nil,
 				IgnitionRef: &commonv1alpha1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: "machine-0-ignition",
-					},
-					Key: defaultIgnitionKey,
+					Name: "machine-0-ignition",
+					Key:  defaultIgnitionKey,
 				},
 			}))
 		}).Should(Succeed())

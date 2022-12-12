@@ -26,8 +26,8 @@ import (
 	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/validation"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
-	"github.com/onmetal/onmetal-api/apis/common/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -128,10 +128,8 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 			NetworkInterfaces:   providerSpec.NetworkInterfaces,
 			Volumes:             providerSpec.Volumes,
 			IgnitionRef: &v1alpha1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: ignitionSecret.Name,
-				},
-				Key: ignitionSecretKey,
+				Name: ignitionSecret.Name,
+				Key:  ignitionSecretKey,
 			},
 		},
 	}
