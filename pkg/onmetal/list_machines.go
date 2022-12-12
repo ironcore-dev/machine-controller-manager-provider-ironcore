@@ -55,7 +55,8 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 
 	machineList := make(map[string]string, len(onmetalMachineList.Items))
 	for _, machine := range onmetalMachineList.Items {
-		machineList[machine.Name] = machine.Name
+		machineID := getProviderIDForOnmetalMachine(&machine)
+		machineList[machineID] = machine.Name
 	}
 
 	return &driver.ListMachinesResponse{MachineList: machineList}, nil

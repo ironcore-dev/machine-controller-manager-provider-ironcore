@@ -45,7 +45,7 @@ var _ = Describe("ListMachines", func() {
 			MachineClass: newMachineClass(internal.ProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.ListMachinesResponse{
-			MachineList: map[string]string{"machine-0": "machine-0"},
+			MachineList: map[string]string{fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0): "machine-0"},
 		}))
 	})
 })
