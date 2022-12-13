@@ -25,7 +25,7 @@ require (
 )
 
 replace (
-	github.com/gardener/machine-controller-manager => github.com/FlorinPeter/machine-controller-manager v0.0.0-20221210233256-b6760dcee3fe
+	github.com/gardener/machine-controller-manager => github.com/afritzler/machine-controller-manager v0.0.0-20221213081200-699074e5c9e6
 	k8s.io/client-go => k8s.io/client-go v0.24.8
 )
 
