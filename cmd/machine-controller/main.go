@@ -16,8 +16,6 @@ package main
 
 import (
 	"fmt"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
 	"os"
 
 	"github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/scheme"
@@ -28,7 +26,9 @@ import (
 	_ "github.com/gardener/machine-controller-manager/pkg/util/reflector/prometheus" // for reflector metric registration
 	_ "github.com/gardener/machine-controller-manager/pkg/util/workqueue/prometheus" // for workqueue metric registration
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	"github.com/spf13/pflag"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/component-base/cli/flag"

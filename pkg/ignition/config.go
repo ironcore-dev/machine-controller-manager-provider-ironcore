@@ -18,12 +18,13 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"text/template"
+
 	"github.com/Masterminds/sprig"
 	buconfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	"github.com/imdario/mergo"
 	"sigs.k8s.io/yaml"
-	"text/template"
 )
 
 var (
