@@ -11,7 +11,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/onmetal/controller-utils v0.6.5
 	github.com/onmetal/onmetal-api v0.0.13-0.20221209171738-4a6e20c76693
-	github.com/onsi/ginkgo/v2 v2.5.1
+	github.com/onsi/ginkgo/v2 v2.6.0
 	github.com/onsi/gomega v1.24.0
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.24.0
