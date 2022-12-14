@@ -22,7 +22,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,6 +35,12 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 	klog.V(3).Infof("Machine list request has been received for %q", req.MachineClass.Name)
 	defer klog.V(3).Infof("Machine list request has been processed for %q", req.MachineClass.Name)
 
+	// Get namespace from machine secret
+	namespace, ok := req.Secret.Data["namespace"]
+	if !ok {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
+	}
+
 	// Create k8s client for the user provided machine secret. This client will be used
 	// to create the resources in the user provided namespace.
 	k8sClient, err := d.createK8sClient(req.Secret)
@@ -43,13 +49,14 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 	}
 
 	onmetalMachineList := &computev1alpha1.MachineList{}
-	if err := k8sClient.List(ctx, onmetalMachineList, client.InNamespace(d.Namespace), client.MatchingLabels{labelKeyProvider: apiv1alpha1.ProviderName}); err != nil {
+	if err := k8sClient.List(ctx, onmetalMachineList, client.InNamespace(string(namespace)), client.MatchingLabels{labelKeyProvider: apiv1alpha1.ProviderName}); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	machineList := make(map[string]string, len(onmetalMachineList.Items))
 	for _, machine := range onmetalMachineList.Items {
-		machineList[machine.Name] = machine.Name
+		machineID := getProviderIDForOnmetalMachine(&machine)
+		machineList[machineID] = machine.Name
 	}
 
 	return &driver.ListMachinesResponse{MachineList: machineList}, nil

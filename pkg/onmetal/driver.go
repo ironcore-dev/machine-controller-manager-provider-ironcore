@@ -22,10 +22,10 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,22 +41,23 @@ const (
 )
 
 type onmetalDriver struct {
-	onmetalClient client.Client
-	Namespace     string
+	Schema *runtime.Scheme
 }
 
 // NewDriver returns a new Gardener on Metal driver object
-func NewDriver(client client.Client, namespace string) driver.Driver {
-	return &onmetalDriver{onmetalClient: client, Namespace: namespace}
+func NewDriver(schema *runtime.Scheme) driver.Driver {
+	return &onmetalDriver{
+		Schema: schema,
+	}
 }
 
 func (d *onmetalDriver) GenerateMachineClassForMigration(_ context.Context, _ *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
 	return &driver.GenerateMachineClassForMigrationResponse{}, nil
 }
 
-func (d *onmetalDriver) getOnmetalMachineKeyFromMachineRequest(req *driver.GetMachineStatusRequest) types.NamespacedName {
+func (d *onmetalDriver) getOnmetalMachineKeyFromMachineRequest(req *driver.GetMachineStatusRequest, namespace string) types.NamespacedName {
 	return types.NamespacedName{
-		Namespace: d.Namespace,
+		Namespace: namespace,
 		Name:      req.Machine.Name,
 	}
 }
@@ -71,7 +72,7 @@ func (d *onmetalDriver) createK8sClient(secret *corev1.Secret) (client.Client, e
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to load client config from machine secret %s: %v", client.ObjectKeyFromObject(secret), err))
 	}
-	k8sClient, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	k8sClient, err := client.New(cfg, client.Options{Scheme: d.Schema})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client: %v", err))
 	}

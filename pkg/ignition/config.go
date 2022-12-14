@@ -16,37 +16,65 @@ package ignition
 
 import (
 	"bytes"
-	"encoding/base64"
+	_ "embed"
 	"fmt"
-	"strings"
 	"text/template"
+
+	"github.com/Masterminds/sprig"
+	buconfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
+	"github.com/imdario/mergo"
+	"sigs.k8s.io/yaml"
+)
+
+var (
+	//go:embed template.yaml
+	IgnitionTemplate string
 )
 
 type Config struct {
-	PasswdHash     string
-	Hostname       string
-	SSHKeys        []string
-	UserdataBase64 string
-	InstallPath    string
+	Hostname         string
+	UserData         string
+	Ignition         string
+	IgnitionOverride bool
 }
 
 func File(config *Config) (string, error) {
-	ignitionTemplate := `
-{
-  "ignition": {"config":{},"timeouts":{},"version":"3.0.0"},
-  "networkd":{"units":[{"contents":"[Match]\nName=ens192\n\n[Network]\nDHCP=no\nLinkLocalAddressing=no\nIPv6AcceptRA=no\n","name":"00-ens192.network"}]},
-  "passwd":{"users":[{"name":"core","passwordHash":"{{.PasswdHash}}","sshAuthorizedKeys":[{{range $index,$elem := .SSHKeys}}{{if $index}},{{end}}"{{$elem}}"{{end}}]}]},
-  "storage": {
-	"directories":[{"filesystem":"root","path":"{{.InstallPath}}","mode":493}],
-	"files":[
-	  {"filesystem":"root","path":"/etc/hostname","contents":{"source":"data:,{{.Hostname}}"},"mode":420},
-	  {"filesystem":"root","path":"{{.InstallPath}}/user_data","contents":{"source":"data:text/plain;charset=utf-8;base64,{{.UserdataBase64}}"},"mode":420}
-	]
-  },
-  "systemd":{}
-}
-`
-	tmpl, err := template.New("ignition").Parse(ignitionTemplate)
+
+	ignitionBase := &map[string]interface{}{}
+	if err := yaml.Unmarshal([]byte(IgnitionTemplate), ignitionBase); err != nil {
+		return "", err
+	}
+
+	// if ignition was set in providerSpec merge it with our template
+	if config.Ignition != "" {
+		additional := map[string]interface{}{}
+
+		if err := yaml.Unmarshal([]byte(config.Ignition), &additional); err != nil {
+			return "", err
+		}
+
+		// default to append ignition
+		opt := mergo.WithAppendSlice
+
+		// allow also to fully override
+		if config.IgnitionOverride {
+			opt = mergo.WithOverride
+		}
+
+		// merge both ignitions
+		err := mergo.Merge(ignitionBase, additional, opt)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	mergedIgnition, err := yaml.Marshal(ignitionBase)
+	if err != nil {
+		return "", err
+	}
+
+	tmpl, err := template.New("ignition").Funcs(sprig.HermeticTxtFuncMap()).Parse(string(mergedIgnition))
 	if err != nil {
 		return "", fmt.Errorf("failed creating ignition file: %w", err)
 	}
@@ -55,45 +83,24 @@ func File(config *Config) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed creating ignition file while executing template: %w", err)
 	}
-	return buf.String(), nil
-}
 
-func PrepareUserData(userdata string, sshKeys []string) (string, error) {
-	s := userdata
-	if strings.HasPrefix(userdata, "#!/") {
-		// assume it's a shell script and the ssh keys are appended directly to the authorized keys
-		s = packageInCloudInit(userdata)
+	ignition, err := renderButane(buf.Bytes())
+	if err != nil {
+		return "", err
 	}
-	return addSSHKeysSection(s, sshKeys)
-}
 
-func packageInCloudInit(userdata string) string {
-	content := base64.StdEncoding.EncodeToString([]byte(userdata))
-	rewrittenUserdata := fmt.Sprintf(`#cloud-config
-write_files:
-- encoding: b64
-  content: %s
-  owner: root:root
-  path: /root/cloud-init-script
-  permissions: '0555'
-runcmd:
-- /root/cloud-init-script
-- rm /root/cloud-init-script
-`, content)
-	return rewrittenUserdata
+	return ignition, nil
 }
-
-func addSSHKeysSection(userdata string, sshKeys []string) (string, error) {
-	if len(sshKeys) == 0 {
-		return userdata, nil
+func renderButane(dataIn []byte) (string, error) {
+	// render by butane to json
+	options := common.TranslateBytesOptions{
+		Raw:    true,
+		Pretty: false,
 	}
-	s := userdata
-	if strings.Contains(s, "ssh_authorized_keys:") {
-		return "", fmt.Errorf("userdata already contains key `ssh_authorized_keys`")
+	options.NoResourceAutoCompression = true
+	dataOut, _, err := buconfig.TranslateBytes(dataIn, options)
+	if err != nil {
+		return "", err
 	}
-	s = s + "\nssh_authorized_keys:\n"
-	for _, key := range sshKeys {
-		s = s + fmt.Sprintf("- %q\n", key)
-	}
-	return s, nil
+	return string(dataOut), nil
 }

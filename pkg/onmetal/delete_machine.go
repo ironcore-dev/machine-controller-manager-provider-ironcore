@@ -23,7 +23,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/apis/compute/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,6 +43,12 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	klog.V(3).Infof("Machine deletion request has been received for %q", req.Machine.Name)
 	defer klog.V(3).Infof("Machine deletion request has been processed for %q", req.Machine.Name)
 
+	// Get namespace from machine secret
+	namespace, ok := req.Secret.Data["namespace"]
+	if !ok {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
+	}
+
 	ignitionSecret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -50,10 +56,18 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: d.Namespace,
+			Namespace: string(namespace),
 		},
 	}
-	if err := d.onmetalClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
+
+	// Create k8s client for the user provided machine secret. This client will be used
+	// to create the resources in the user provided namespace.
+	k8sClient, err := d.createK8sClient(req.Secret)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
+	}
+
+	if err := k8sClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
 		// Unknown leads to short retry in machine controller
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting ignition secret: %s", err.Error()))
 	}
@@ -65,15 +79,8 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: d.Namespace,
+			Namespace: string(namespace),
 		},
-	}
-
-	// Create k8s client for the user provided machine secret. This client will be used
-	// to create the resources in the user provided namespace.
-	k8sClient, err := d.createK8sClient(req.Secret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
 	}
 
 	if err := k8sClient.Delete(ctx, onmetalMachine); err != nil {
