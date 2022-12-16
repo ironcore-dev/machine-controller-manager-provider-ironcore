@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.16.0
-	github.com/gardener/gardener v1.51.1
+	github.com/gardener/gardener v1.62.0
 	github.com/gardener/machine-controller-manager v0.47.0
 	github.com/google/addlicense v1.1.0
 	github.com/imdario/mergo v0.3.12
@@ -15,12 +15,12 @@ require (
 	github.com/onsi/gomega v1.24.0
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.24.8
-	k8s.io/apimachinery v0.24.8
+	k8s.io/api v0.25.2
+	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.24.8
+	k8s.io/component-base v0.25.0
 	k8s.io/klog/v2 v2.80.1
-	sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/controller-runtime v0.13.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -45,8 +45,9 @@ require (
 	github.com/coreos/ignition/v2 v2.14.0 // indirect
 	github.com/coreos/vcontext v0.0.0-20220810162454-88bd546c634c // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/emicklei/go-restful v2.9.6+incompatible // indirect
+	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
+	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
@@ -97,11 +98,11 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.24.8 // indirect
-	k8s.io/apiserver v0.24.8 // indirect
-	k8s.io/cluster-bootstrap v0.24.8 // indirect
-	k8s.io/kube-aggregator v0.24.8 // indirect
-	k8s.io/kube-openapi v0.0.0-20220401212409-b28bf2818661 // indirect
+	k8s.io/apiextensions-apiserver v0.25.0 // indirect
+	k8s.io/apiserver v0.25.0 // indirect
+	k8s.io/cluster-bootstrap v0.25.0 // indirect
+	k8s.io/kube-aggregator v0.25.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
