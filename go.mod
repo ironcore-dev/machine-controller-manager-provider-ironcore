@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/coreos/butane v0.16.0
+	github.com/coreos/butane v0.17.0
 	github.com/gardener/gardener v1.62.1
 	github.com/gardener/machine-controller-manager v0.47.0
 	github.com/google/addlicense v1.1.0
@@ -40,7 +40,7 @@ require (
 	github.com/clarketm/json v1.17.1 // indirect
 	github.com/coreos/go-json v0.0.0-20220810161552-7cce03887f34 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
-	github.com/coreos/go-systemd/v22 v22.4.0 // indirect
+	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/coreos/ignition/v2 v2.14.0 // indirect
 	github.com/coreos/vcontext v0.0.0-20220810162454-88bd546c634c // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
