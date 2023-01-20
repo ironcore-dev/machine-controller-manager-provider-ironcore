@@ -33,6 +33,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
+	logsv1 "k8s.io/component-base/logs/api/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
@@ -41,12 +42,13 @@ func main() {
 	s.AddFlags(pflag.CommandLine)
 
 	options := logs.NewOptions()
-	options.AddFlags(pflag.CommandLine)
+	logs.AddFlags(pflag.CommandLine)
 
 	flag.InitFlags()
 	logs.InitLogs()
 	defer logs.FlushLogs()
-	if err := options.ValidateAndApply(nil); err != nil {
+
+	if err := logsv1.ValidateAndApply(options, nil); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}

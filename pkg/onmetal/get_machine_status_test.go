@@ -20,7 +20,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
-	"github.com/onmetal/onmetal-api/testutils"
+	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

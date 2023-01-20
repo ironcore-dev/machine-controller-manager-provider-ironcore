@@ -123,6 +123,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 			MachineClassRef:     providerSpec.MachineClassRef,
 			MachinePoolSelector: providerSpec.MachinePoolSelector,
 			MachinePoolRef:      providerSpec.MachinePoolRef,
+			Power:               computev1alpha1.PowerOn,
 			Image:               providerSpec.Image,
 			ImagePullSecretRef:  providerSpec.ImagePullSecretRef,
 			NetworkInterfaces:   providerSpec.NetworkInterfaces,
