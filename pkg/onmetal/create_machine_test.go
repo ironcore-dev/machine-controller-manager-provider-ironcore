@@ -22,7 +22,7 @@ import (
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
 	commonv1alpha1 "github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	"github.com/onmetal/onmetal-api/testutils"
+	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -54,6 +54,7 @@ var _ = Describe("CreateMachine", func() {
 				MachineClassRef:     corev1.LocalObjectReference{Name: "foo"},
 				MachinePoolSelector: map[string]string{"foo": "bar"},
 				MachinePoolRef:      &corev1.LocalObjectReference{Name: "foo"},
+				Power:               computev1alpha1.PowerOn,
 				Image:               "foo",
 				ImagePullSecretRef:  &corev1.LocalObjectReference{Name: "foo"},
 				NetworkInterfaces:   nil,
