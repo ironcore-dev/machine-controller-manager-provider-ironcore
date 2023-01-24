@@ -12,7 +12,7 @@ require (
 	github.com/onmetal/controller-utils v0.6.7-0.20230109144521-67f4a1e9104d
 	github.com/onmetal/onmetal-api v0.0.13-0.20230111110214-279175822cc4
 	github.com/onsi/ginkgo/v2 v2.7.0
-	github.com/onsi/gomega v1.25.0
+	github.com/onsi/gomega v1.26.0
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.1
