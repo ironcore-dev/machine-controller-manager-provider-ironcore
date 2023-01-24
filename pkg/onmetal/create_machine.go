@@ -23,19 +23,21 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/validation"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
-	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/validation"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
+	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 )
 
+// CreateMachine handles a machine creation request
 func (d *onmetalDriver) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
 	if isEmptyCreateRequest(req) {
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
@@ -63,16 +65,19 @@ func (d *onmetalDriver) CreateMachine(ctx context.Context, req *driver.CreateMac
 	}, nil
 }
 
+// isEmptyCreateRequest checks if any of the fields in CreateMachineRequest is empty
 func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 	return req == nil || req.MachineClass == nil || req.Machine == nil || req.Secret == nil
 }
 
+// applyOnMetalMachine takes care of creating actual onemetal Machine object with proper ignition data
 func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) (*computev1alpha1.Machine, error) {
 	// Get userData from machine secret
 	userData, ok := req.Secret.Data["userData"]
 	if !ok {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find user-data in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
+
 	// Get namespace from machine secret
 	namespace, ok := req.Secret.Data["namespace"]
 	if !ok {
@@ -157,6 +162,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 	return onmetalMachine, nil
 }
 
+// getIgnitionKeyOrDefault checks if key is empty otherwise return default ingintion key
 func getIgnitionKeyOrDefault(key string) string {
 	if key == "" {
 		return computev1alpha1.DefaultIgnitionKey
@@ -164,6 +170,7 @@ func getIgnitionKeyOrDefault(key string) string {
 	return key
 }
 
+// validateProviderSpecAndSecret Validates providerSpec and provider secret
 func validateProviderSpecAndSecret(class *machinev1alpha1.MachineClass, secret *corev1.Secret) (*apiv1alpha1.ProviderSpec, error) {
 	if class == nil {
 		return nil, status.Error(codes.Internal, "MachineClass in ProviderSpec is not set")
