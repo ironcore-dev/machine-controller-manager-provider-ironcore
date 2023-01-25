@@ -71,7 +71,6 @@ var _ = Describe("GetMachineStatus", func() {
 		kubeconfig := getMacReq.Secret.Data["kubeconfig"]
 		delete(getMacReq.Secret.Data, "kubeconfig")
 		ret, err = (*drv).GetMachineStatus(ctx, getMacReq)
-		fmt.Println(err)
 		Expect(ret).To(BeNil())
 		Expect(err).Should(MatchError(status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %s %s%s", client.ObjectKeyFromObject(getMacReq.Secret), FailAtNoKubeconfig, client.ObjectKeyFromObject(getMacReq.Secret), "]"))))
 		getMacReq.Secret.Data["kubeconfig"] = kubeconfig
