@@ -48,11 +48,13 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
 	}
 
+	// Get onemtal machine list
 	onmetalMachineList := &computev1alpha1.MachineList{}
 	if err := k8sClient.List(ctx, onmetalMachineList, client.InNamespace(string(namespace)), client.MatchingLabels{labelKeyProvider: apiv1alpha1.ProviderName}); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	//Creating machineList from onmetalMachineList items
 	machineList := make(map[string]string, len(onmetalMachineList.Items))
 	for _, machine := range onmetalMachineList.Items {
 		machineID := getProviderIDForOnmetalMachine(&machine)

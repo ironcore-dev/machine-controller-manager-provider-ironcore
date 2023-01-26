@@ -18,11 +18,14 @@ import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
 	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("ListMachines", func() {
@@ -30,6 +33,34 @@ var _ = Describe("ListMachines", func() {
 	ns, providerSecret, drv := SetupTest(ctx)
 
 	It("should create a machine", func() {
+
+		By("check machineClass provider")
+		listMacReq := &driver.ListMachinesRequest{
+			MachineClass: newMachineClass(internal.ProviderSpec),
+			Secret:       providerSecret,
+		}
+		listMacReq.MachineClass.Provider = "nonOnmetal"
+		ret, err := (*drv).ListMachines(ctx, listMacReq)
+		Expect(ret).To(BeNil())
+		Expect(err).Should(MatchError(status.Error(codes.InvalidArgument, fmt.Sprintf("requested provider '%s' is not suppored by the driver '%s'", listMacReq.MachineClass.Provider, v1alpha1.ProviderName))))
+
+		By("check namespace in secret")
+		listMacReq.MachineClass.Provider = "onmetal"
+		namespace := listMacReq.Secret.Data["namespace"]
+		delete(listMacReq.Secret.Data, "namespace")
+		ret, err = (*drv).ListMachines(ctx, listMacReq)
+		Expect(ret).To(BeNil())
+		Expect(err).Should(MatchError(status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(listMacReq.Secret)))))
+		listMacReq.Secret.Data["namespace"] = namespace
+
+		By("check creatation of k8sclient from secret")
+		kubeconfig := listMacReq.Secret.Data["kubeconfig"]
+		delete(listMacReq.Secret.Data, "kubeconfig")
+		ret, err = (*drv).ListMachines(ctx, listMacReq)
+		Expect(ret).To(BeNil())
+		Expect(err).Should(MatchError(status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %s %s%s", client.ObjectKeyFromObject(listMacReq.Secret), FailAtNoKubeconfig, client.ObjectKeyFromObject(listMacReq.Secret), "]"))))
+		listMacReq.Secret.Data["kubeconfig"] = kubeconfig
+
 		By("creating machine")
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
