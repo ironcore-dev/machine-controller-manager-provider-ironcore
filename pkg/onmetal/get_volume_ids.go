@@ -18,9 +18,31 @@ import (
 	"context"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"k8s.io/klog/v2"
 )
 
-func (d *onmetalDriver) GetVolumeIDs(_ context.Context, _ *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
-	// TODO: In the future, this could return the volumes for an onmetal provisioner.
-	return &driver.GetVolumeIDsResponse{}, nil
+// OnmetalCSIDriver is the CSI driver for onmetal provisioner
+const (
+	OnmetalCSIDriver = "onmetal-csi-driver"
+)
+
+func (d *onmetalDriver) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
+	klog.V(2).Infof("Get VolumeIDs request has been received")
+	klog.V(4).Infof("PVSpecList = %q", req.PVSpecs)
+
+	var volumeIDs []string
+	for _, pvSpec := range req.PVSpecs {
+		if pvSpec.CSI != nil && pvSpec.CSI.Driver == OnmetalCSIDriver && pvSpec.CSI.VolumeHandle != "" {
+			volumeID := pvSpec.CSI.VolumeHandle
+			volumeIDs = append(volumeIDs, volumeID)
+		}
+	}
+
+	klog.V(2).Infof("Get VolumeIDs request has been processed successfully (%d/%d).", len(volumeIDs), len(req.PVSpecs))
+	klog.V(4).Infof("VolumneIDs: %v", volumeIDs)
+
+	response := &driver.GetVolumeIDsResponse{
+		VolumeIDs: volumeIDs,
+	}
+	return response, nil
 }
