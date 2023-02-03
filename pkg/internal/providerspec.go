@@ -63,7 +63,7 @@ var (
 	],
 	"volumes": [
             {
-                "device": "oda",
+                "device": "foo",
                 "name": "root-disk-1",
                 "volumeRef": {
                     "name": "machine-0"

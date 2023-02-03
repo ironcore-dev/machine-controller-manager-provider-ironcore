@@ -52,7 +52,7 @@ var _ = Describe("DeleteMachine", func() {
 		By("expecting that the onmetal machine is present")
 		machineKey := types.NamespacedName{Namespace: ns.Name, Name: "machine-0"}
 		machine := &computev1alpha1.Machine{}
-		device := "oda"
+		device := "foo"
 		Eventually(func(g Gomega) {
 			err := k8sClient.Get(ctx, machineKey, machine)
 			Expect(err).ToNot(HaveOccurred())
