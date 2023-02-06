@@ -33,7 +33,7 @@ var _ = Describe("GetVolumeIDs", func() {
 		By("creating machine")
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),

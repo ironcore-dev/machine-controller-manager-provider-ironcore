@@ -20,11 +20,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-// ValidateProviderSpec validates the provider spec and provider secret
-func ValidateProviderSpec(spec *v1alpha1.ProviderSpec, secret *corev1.Secret, fldPath *field.Path) field.ErrorList {
+// ValidateProviderSpecAndSecret validates the provider spec and provider secret
+func ValidateProviderSpecAndSecret(spec *v1alpha1.ProviderSpec, secret *corev1.Secret, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	allErrs = append(allErrs, validateSecret(secret, field.NewPath("secretRef"))...)
+	allErrs = append(allErrs, validateSecret(secret, fldPath.Child("secretRef"))...)
 
 	return allErrs
 }

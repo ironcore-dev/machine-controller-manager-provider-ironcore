@@ -51,9 +51,12 @@ func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMac
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
 	}
+
 	// Fetch machine key from machine request
-	onmetalMachineKey := d.getOnmetalMachineKeyFromMachineRequest(req, string(namespace))
-	// Creating machine
+	onmetalMachineKey := client.ObjectKey{
+		Namespace: string(namespace),
+		Name:      req.Machine.Name,
+	}
 	onmetalMachine := &computev1alpha1.Machine{}
 	if err := k8sClient.Get(ctx, onmetalMachineKey, onmetalMachine); err != nil {
 		if apierrors.IsNotFound(err) {
