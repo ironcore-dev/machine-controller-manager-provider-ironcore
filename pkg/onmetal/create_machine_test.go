@@ -77,7 +77,8 @@ var _ = Describe("CreateMachine", func() {
 						NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
 								Labels: map[string]string{
-									NetworkInterafaceMachineNameLabelKey: "machine-0",
+									ShootNameLabelKey:      "my-shoot",
+									ShootNamespaceLabelKey: "my-shoot-namespace",
 								},
 							},
 							Spec: networkingv1alpha1.NetworkInterfaceSpec{

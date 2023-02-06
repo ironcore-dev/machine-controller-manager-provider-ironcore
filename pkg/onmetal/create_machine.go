@@ -138,9 +138,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 						Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
 							NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
 								ObjectMeta: metav1.ObjectMeta{
-									Labels: map[string]string{
-										NetworkInterafaceMachineNameLabelKey: req.Machine.Name,
-									},
+									Labels: providerSpec.Labels,
 								},
 								Spec: networkingv1alpha1.NetworkInterfaceSpec{
 									NetworkRef: corev1.LocalObjectReference{
