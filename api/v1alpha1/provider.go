@@ -53,4 +53,6 @@ type RootDisk struct {
 	Size resource.Quantity `json:"size"`
 	// VolumeClassName defines which volume class to use for the root disk.
 	VolumeClassName string `json:"volumeClassName"`
+	// VolumePoolName defines on which VolumePool a Volume should be scheduled.
+	VolumePoolName string `json:"volumePoolName,omitempty"`
 }

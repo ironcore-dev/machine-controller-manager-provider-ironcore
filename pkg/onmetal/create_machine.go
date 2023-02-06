@@ -184,6 +184,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 								VolumeClassRef: &corev1.LocalObjectReference{
 									Name: providerSpec.RootDisk.VolumeClassName,
 								},
+								VolumePoolRef: getVolumePoolRefFromProviderSpec(providerSpec),
 								Resources: corev1.ResourceList{
 									corev1.ResourceStorage: providerSpec.RootDisk.Size,
 								},
@@ -216,6 +217,13 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 	}
 
 	return onmetalMachine, nil
+}
+
+func getVolumePoolRefFromProviderSpec(spec *apiv1alpha1.ProviderSpec) *corev1.LocalObjectReference {
+	if spec == nil || spec.RootDisk == nil || spec.RootDisk.VolumePoolName == "" {
+		return nil
+	}
+	return &corev1.LocalObjectReference{Name: spec.RootDisk.VolumePoolName}
 }
 
 // getIgnitionKeyOrDefault checks if key is empty otherwise return default ingintion key

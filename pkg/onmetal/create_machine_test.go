@@ -45,20 +45,21 @@ var _ = Describe("CreateMachine", func() {
 
 	It("should create a machine", func() {
 		By("creating machine")
+		machineName := "machine-0"
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
 			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
-			NodeName:   "machine-0",
+			NodeName:   machineName,
 		}))
 
 		By("ensuring that the onmetal machine has been created")
 		machine := &computev1alpha1.Machine{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: ns.Name,
-				Name:      "machine-0",
+				Name:      machineName,
 			},
 		}
 
@@ -71,7 +72,7 @@ var _ = Describe("CreateMachine", func() {
 			HaveField("Spec.MachinePoolRef", &corev1.LocalObjectReference{Name: "az1"}),
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
 			HaveField("Spec.NetworkInterfaces", ContainElement(computev1alpha1.NetworkInterface{
-				Name: "machine-0",
+				Name: machineName,
 				NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
 					Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
 						NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
@@ -106,7 +107,7 @@ var _ = Describe("CreateMachine", func() {
 				},
 			})),
 			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
-				Name:   "machine-0",
+				Name:   machineName,
 				Device: pointer.String("oda"),
 				VolumeSource: computev1alpha1.VolumeSource{
 					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
@@ -125,7 +126,7 @@ var _ = Describe("CreateMachine", func() {
 				},
 			})),
 			HaveField("Spec.IgnitionRef", &commonv1alpha1.SecretKeySelector{
-				Name: "machine-0-ignition",
+				Name: fmt.Sprintf("%s-ignition", machineName),
 				Key:  defaultIgnitionKey,
 			}),
 		))
@@ -134,7 +135,7 @@ var _ = Describe("CreateMachine", func() {
 		ignition := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: ns.Name,
-				Name:      "machine-0-ignition",
+				Name:      fmt.Sprintf("%s-ignition", machineName),
 			},
 		}
 		Eventually(Object(ignition)).Should(SatisfyAll(
@@ -182,5 +183,97 @@ var _ = Describe("CreateMachine", func() {
 			})
 			g.Expect(err.Error()).To(ContainSubstring("namespace is required"))
 		}).Should(Succeed())
+	})
+
+	It("should create a machine with a volume pool ref", func() {
+		By("creating machine")
+		machineName := "machine-1"
+		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", 1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpecWithPoolRef),
+			Secret:       providerSecret,
+		})).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 1),
+			NodeName:   machineName,
+		}))
+
+		By("ensuring that the onmetal machine has been created")
+		machine := &computev1alpha1.Machine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      machineName,
+			},
+		}
+
+		Eventually(Object(machine)).Should(SatisfyAll(
+			HaveField("ObjectMeta.Labels", map[string]string{
+				ShootNameLabelKey:      "my-shoot",
+				ShootNamespaceLabelKey: "my-shoot-namespace",
+			}),
+			HaveField("Spec.MachineClassRef", corev1.LocalObjectReference{Name: "my-instance-type"}),
+			HaveField("Spec.MachinePoolRef", &corev1.LocalObjectReference{Name: "az1"}),
+			HaveField("Spec.Power", computev1alpha1.PowerOn),
+			HaveField("Spec.NetworkInterfaces", ContainElement(computev1alpha1.NetworkInterface{
+				Name: machineName,
+				NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
+					Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
+						NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
+							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									ShootNameLabelKey:      "my-shoot",
+									ShootNamespaceLabelKey: "my-shoot-namespace",
+								},
+							},
+							Spec: networkingv1alpha1.NetworkInterfaceSpec{
+								NetworkRef: corev1.LocalObjectReference{
+									Name: "my-network",
+								},
+								IPFamilies: []corev1.IPFamily{corev1.IPv4Protocol},
+								IPs: []networkingv1alpha1.IPSource{
+									{
+										Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
+											PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
+												Spec: ipamv1alpha1.PrefixSpec{
+													IPFamily: corev1.IPv4Protocol,
+													ParentRef: &corev1.LocalObjectReference{
+														Name: "my-prefix",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			})),
+			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
+				Name:   machineName,
+				Device: pointer.String("oda"),
+				VolumeSource: computev1alpha1.VolumeSource{
+					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
+						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
+							Spec: storagev1alpha1.VolumeSpec{
+								VolumePoolRef: &corev1.LocalObjectReference{
+									Name: "foo",
+								},
+								VolumeClassRef: &corev1.LocalObjectReference{
+									Name: "foo",
+								},
+								Resources: corev1.ResourceList{
+									corev1.ResourceStorage: resource.MustParse("10Gi"),
+								},
+								Image: "my-image",
+							},
+						},
+					},
+				},
+			})),
+			HaveField("Spec.IgnitionRef", &commonv1alpha1.SecretKeySelector{
+				Name: fmt.Sprintf("%s-ignition", machineName),
+				Key:  defaultIgnitionKey,
+			}),
+		))
 	})
 })
