@@ -23,18 +23,20 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/klog/v2"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
 	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/validation"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
 	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
+	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
+	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // CreateMachine handles a machine creation request
@@ -43,7 +45,7 @@ func (d *onmetalDriver) CreateMachine(ctx context.Context, req *driver.CreateMac
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
 	}
 	if req.MachineClass.Provider != apiv1alpha1.ProviderName {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("requested provider '%s' is not suppored by the driver '%s'", req.MachineClass.Provider, apiv1alpha1.ProviderName))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("requested provider '%s' is not supported by the driver '%s'", req.MachineClass.Provider, apiv1alpha1.ProviderName))
 	}
 
 	klog.V(3).Infof("Machine creation request has been received for %s", req.Machine.Name)
@@ -119,25 +121,79 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
 			Namespace: string(namespace),
-			Labels: map[string]string{
-				labelKeyProvider: apiv1alpha1.ProviderName,
-				labelKeyApp:      labelValueMachine,
-			},
+			Labels:    providerSpec.Labels,
 		},
 		Spec: computev1alpha1.MachineSpec{
-			MachineClassRef:     providerSpec.MachineClassRef,
-			MachinePoolSelector: providerSpec.MachinePoolSelector,
-			MachinePoolRef:      providerSpec.MachinePoolRef,
-			Power:               computev1alpha1.PowerOn,
-			Image:               providerSpec.Image,
-			ImagePullSecretRef:  providerSpec.ImagePullSecretRef,
-			NetworkInterfaces:   providerSpec.NetworkInterfaces,
-			Volumes:             providerSpec.Volumes,
+			MachineClassRef: corev1.LocalObjectReference{
+				Name: req.MachineClass.NodeTemplate.InstanceType,
+			},
+			MachinePoolRef: &corev1.LocalObjectReference{
+				Name: req.MachineClass.NodeTemplate.Zone,
+			},
+			Power: computev1alpha1.PowerOn,
+			NetworkInterfaces: []computev1alpha1.NetworkInterface{
+				{
+					Name: req.Machine.Name,
+					NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
+						Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
+							NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
+								ObjectMeta: metav1.ObjectMeta{
+									Labels: providerSpec.Labels,
+								},
+								Spec: networkingv1alpha1.NetworkInterfaceSpec{
+									NetworkRef: corev1.LocalObjectReference{
+										Name: providerSpec.NetworkName,
+									},
+									IPFamilies: []corev1.IPFamily{corev1.IPv4Protocol},
+									IPs: []networkingv1alpha1.IPSource{
+										{
+											Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
+												PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
+													Spec: ipamv1alpha1.PrefixSpec{
+														ParentRef: &corev1.LocalObjectReference{
+															Name: providerSpec.PrefixName,
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			IgnitionRef: &v1alpha1.SecretKeySelector{
 				Name: ignitionSecret.Name,
 				Key:  ignitionSecretKey,
 			},
 		},
+	}
+
+	if providerSpec.RootDisk == nil {
+		onmetalMachine.Spec.Image = providerSpec.Image
+	} else {
+		onmetalMachine.Spec.Volumes = []computev1alpha1.Volume{
+			{
+				Name: req.Machine.Name,
+				VolumeSource: computev1alpha1.VolumeSource{
+					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
+						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
+							Spec: storagev1alpha1.VolumeSpec{
+								VolumeClassRef: &corev1.LocalObjectReference{
+									Name: providerSpec.RootDisk.VolumeClassName,
+								},
+								Resources: corev1.ResourceList{
+									corev1.ResourceStorage: providerSpec.RootDisk.Size,
+								},
+								Image: providerSpec.Image,
+							},
+						},
+					},
+				},
+			},
+		}
 	}
 
 	// Create k8s client for the user provided machine secret. This client will be used
@@ -181,10 +237,9 @@ func validateProviderSpecAndSecret(class *machinev1alpha1.MachineClass, secret *
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	validationErr := validation.ValidateProviderSpec(providerSpec, secret, field.NewPath("providerSpec"))
+	validationErr := validation.ValidateProviderSpecAndSecret(providerSpec, secret, field.NewPath("providerSpec"))
 	if validationErr.ToAggregate() != nil && len(validationErr.ToAggregate().Errors()) > 0 {
-		err := fmt.Errorf("failed to validate provider spec: %v", validationErr.ToAggregate().Errors())
-		klog.V(2).Infof("Validation of OnMetalMachineClass '%s' failed: %w", class.Name, err)
+		err := fmt.Errorf("failed to validate provider spec and secret: %v", validationErr.ToAggregate().Errors())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

@@ -17,68 +17,23 @@ package internal
 var (
 	ProviderSpec = []byte(`
 {
-	"machineClassRef": {
-		"name": "foo"
+	"labels": {
+		"shoot-name": "my-shoot",
+		"shoot-namespace": "my-shoot-namespace"
 	},
-	"machinePoolSelector": {
-			"foo": "bar"
+	"machineClassName": "foo",
+	"machinePoolName": "foo",
+	"networkName": "my-network",
+	"prefixName": "my-prefix",
+	"rootDisk": {
+		"volumeClassName": "foo",
+		"size": "10Gi"
 	},
-	"machinePoolRef": {
-		"name": "foo"
-	},
-	"networkInterfaces": [
-		{
-			"ephemeral": {
-				"networkInterfaceTemplate": {
-					"metadata": {
-						"creationTimestamp": null
-					},
-					"spec": {
-						"ipFamilies": [
-							"IPv4"
-						],
-						"ips": [
-							{
-								"value": "10.0.0.8"
-							}
-						],
-						"networkRef": {
-							"name": "network-ref1"
-						},
-						"virtualIP": {
-							"ephemeral": {
-								"virtualIPTemplate": {
-									"spec": {
-										"ipFamily": "IPv4",
-										"type": "Public"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"name": "net-interface"
-		}
-	],
-	"volumes": [
-            {
-                "device": "oda",
-                "name": "root-disk-1",
-                "volumeRef": {
-                    "name": "machine-0"
-                }
-            }
-        ],
 	"ignitionSecret": {
 		"name": "foo"
 	},
-	"image": "foo",
-	"imagePullSecretRef": {
-		"name": "foo"
-	},
+	"image": "my-image",
 	"ignitionSecretKey": "ignition.json",
     "ignition": "passwd:\n  users:\n    - groups: [group1]\n      name: xyz\n      sshAuthorizedKeys: ssh-ed25519 AAABC3NzaC1lZDI1NTE5AAAAIGqrmrq1XwWnPJoSsAeuVcDQNqA5XQK\n      shell: \/bin\/bash"
-}
-	`)
+}`)
 )
