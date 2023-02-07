@@ -25,7 +25,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/controller-utils/buildutils"
 	"github.com/onmetal/controller-utils/modutils"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	envtestutils "github.com/onmetal/onmetal-api/utils/envtest"
 	"github.com/onmetal/onmetal-api/utils/envtest/apiserver"
@@ -45,7 +45,6 @@ import (
 )
 
 const (
-	slowSpecThreshold    = 20 * time.Second
 	eventuallyTimeout    = 20 * time.Second
 	pollingInterval      = 250 * time.Millisecond
 	consistentlyDuration = 1 * time.Second
@@ -83,7 +82,6 @@ var _ = BeforeSuite(func() {
 			modutils.Dir("github.com/gardener/machine-controller-manager", "kubernetes", "crds", "machine.sapcloud.io_machinesets.yaml"),
 		},
 		ErrorIfCRDPathMissing: true,
-		//AttachControlPlaneOutput: true,
 	}
 
 	testEnvExt = &envtestutils.EnvironmentExtensions{

@@ -21,7 +21,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,14 +31,13 @@ import (
 )
 
 const (
-	defaultIgnitionKey                   = "ignition.json"
-	NetworkInterafaceMachineNameLabelKey = "worker-name"
-	ShootNameLabelKey                    = "shoot-name"
-	ShootNamespaceLabelKey               = "shoot-namespace"
+	defaultIgnitionKey     = "ignition.json"
+	ShootNameLabelKey      = "shoot-name"
+	ShootNamespaceLabelKey = "shoot-namespace"
 )
 
 var (
-	fieldOwner = client.FieldOwner("machine-controller-manager-provider-onmetal")
+	fieldOwner = client.FieldOwner("mcm.onmetal.de/field-owner")
 )
 
 type onmetalDriver struct {

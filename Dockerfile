@@ -15,7 +15,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 # Copy the go source
 COPY cmd/ cmd/
-COPY api/ api/
 COPY cmd/ cmd/
 COPY pkg/ pkg/
 
