@@ -40,7 +40,6 @@ type Config struct {
 }
 
 func File(config *Config) (string, error) {
-
 	ignitionBase := &map[string]interface{}{}
 	if err := yaml.Unmarshal([]byte(IgnitionTemplate), ignitionBase); err != nil {
 		return "", err

@@ -25,19 +25,20 @@ import (
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	fieldOwner        = client.FieldOwner("machine-controller-manager-provider-onmetal")
-	labelKeyApp       = "app"
-	labelKeyProvider  = "machine-provider"
-	labelValueMachine = "machine"
+	defaultIgnitionKey                   = "ignition.json"
+	NetworkInterafaceMachineNameLabelKey = "worker-name"
+	ShootNameLabelKey                    = "shoot-name"
+	ShootNamespaceLabelKey               = "shoot-namespace"
+)
 
-	defaultIgnitionKey = "ignition.json"
+var (
+	fieldOwner = client.FieldOwner("machine-controller-manager-provider-onmetal")
 )
 
 type onmetalDriver struct {
@@ -53,13 +54,6 @@ func NewDriver(schema *runtime.Scheme) driver.Driver {
 
 func (d *onmetalDriver) GenerateMachineClassForMigration(_ context.Context, _ *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
 	return &driver.GenerateMachineClassForMigrationResponse{}, nil
-}
-
-func (d *onmetalDriver) getOnmetalMachineKeyFromMachineRequest(req *driver.GetMachineStatusRequest, namespace string) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: namespace,
-		Name:      req.Machine.Name,
-	}
 }
 
 func (d *onmetalDriver) createK8sClient(secret *corev1.Secret) (client.Client, error) {

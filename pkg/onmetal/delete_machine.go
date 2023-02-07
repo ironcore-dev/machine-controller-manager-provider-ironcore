@@ -51,22 +51,18 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
 
-	ignitionSecret := &corev1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: corev1.SchemeGroupVersion.String(),
-			Kind:       "Secret",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: string(namespace),
-		},
-	}
-
 	// Create k8s client for the user provided machine secret. This client will be used
 	// to create the resources in the user provided namespace.
 	k8sClient, err := d.createK8sClient(req.Secret)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
+	}
+
+	ignitionSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      getIgnitionNameForMachine(req.Machine.Name),
+			Namespace: string(namespace),
+		},
 	}
 
 	if err := k8sClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
@@ -75,10 +71,6 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	}
 
 	onmetalMachine := &computev1alpha1.Machine{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: computev1alpha1.SchemeGroupVersion.String(),
-			Kind:       "Machine",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
 			Namespace: string(namespace),

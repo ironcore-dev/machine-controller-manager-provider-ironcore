@@ -23,6 +23,12 @@ import (
 	gardenercorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	gardenermachinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"github.com/onmetal/controller-utils/buildutils"
+	"github.com/onmetal/controller-utils/modutils"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
+	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	envtestutils "github.com/onmetal/onmetal-api/utils/envtest"
+	"github.com/onmetal/onmetal-api/utils/envtest/apiserver"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
@@ -33,15 +39,9 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"sigs.k8s.io/controller-runtime/pkg/envtest/komega"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	"github.com/onmetal/controller-utils/buildutils"
-	"github.com/onmetal/controller-utils/modutils"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	envtestutils "github.com/onmetal/onmetal-api/utils/envtest"
-	"github.com/onmetal/onmetal-api/utils/envtest/apiserver"
 )
 
 const (
@@ -106,6 +106,8 @@ var _ = BeforeSuite(func() {
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
+
+	komega.SetClient(k8sClient)
 
 	apiSrv, err := apiserver.New(cfg, apiserver.Options{
 		MainPath:     "github.com/onmetal/onmetal-api/onmetal-apiserver/cmd/apiserver",
@@ -213,20 +215,16 @@ func newMachine(namespace *corev1.Namespace, prefix string, setMachineIndex int,
 	return machine
 }
 
-func newMachineClass(providerSpec []byte) *gardenermachinev1alpha1.MachineClass {
+func newMachineClass(providerName string, providerSpec []byte) *gardenermachinev1alpha1.MachineClass {
 	return &gardenermachinev1alpha1.MachineClass{
 		ProviderSpec: runtime.RawExtension{
 			Raw: providerSpec,
 		},
-		Provider: v1alpha1.ProviderName,
-	}
-}
-
-func newMachineClassWithDifferntProvider(providerSpec []byte) *gardenermachinev1alpha1.MachineClass {
-	return &gardenermachinev1alpha1.MachineClass{
-		ProviderSpec: runtime.RawExtension{
-			Raw: providerSpec,
+		Provider: providerName,
+		NodeTemplate: &gardenermachinev1alpha1.NodeTemplate{
+			InstanceType: "my-instance-type",
+			Region:       "foo",
+			Zone:         "az1",
 		},
-		Provider: "providerXYZ",
 	}
 }
