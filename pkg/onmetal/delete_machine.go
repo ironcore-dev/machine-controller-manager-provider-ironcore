@@ -22,6 +22,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
+	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 )
 

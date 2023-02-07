@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/api/v1alpha1"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
 	commonv1alpha1 "github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
