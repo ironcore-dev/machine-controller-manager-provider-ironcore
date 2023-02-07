@@ -36,27 +36,4 @@ var (
 	"ignitionSecretKey": "ignition.json",
     "ignition": "passwd:\n  users:\n    - groups: [group1]\n      name: xyz\n      sshAuthorizedKeys: ssh-ed25519 AAABC3NzaC1lZDI1NTE5AAAAIGqrmrq1XwWnPJoSsAeuVcDQNqA5XQK\n      shell: \/bin\/bash"
 }`)
-
-	ProviderSpecWithPoolRef = []byte(`
-{
-	"labels": {
-		"shoot-name": "my-shoot",
-		"shoot-namespace": "my-shoot-namespace"
-	},
-	"machineClassName": "foo",
-	"machinePoolName": "foo",
-	"networkName": "my-network",
-	"prefixName": "my-prefix",
-	"rootDisk": {
-		"volumeClassName": "foo",
-		"volumePoolName": "foo",
-		"size": "10Gi"
-	},
-	"ignitionSecret": {
-		"name": "foo"
-	},
-	"image": "my-image",
-	"ignitionSecretKey": "ignition.json",
-    "ignition": "passwd:\n  users:\n    - groups: [group1]\n      name: xyz\n      sshAuthorizedKeys: ssh-ed25519 AAABC3NzaC1lZDI1NTE5AAAAIGqrmrq1XwWnPJoSsAeuVcDQNqA5XQK\n      shell: \/bin\/bash"
-}`)
 )
