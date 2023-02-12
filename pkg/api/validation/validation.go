@@ -41,13 +41,5 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 		allErrs = append(allErrs, field.Required(fldPath.Child("userData"), "userData is required"))
 	}
 
-	if secret.Data["kubeconfig"] == nil {
-		allErrs = append(allErrs, field.Required(fldPath.Child("kubeconfig"), "kubeconfig is required"))
-	}
-
-	if secret.Data["namespace"] == nil {
-		allErrs = append(allErrs, field.Required(fldPath.Child("namespace"), "namespace is required"))
-	}
-
 	return allErrs
 }

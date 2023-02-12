@@ -159,29 +159,5 @@ var _ = Describe("CreateMachine", func() {
 			})
 			g.Expect(err.Error()).To(ContainSubstring("not supported by the driver"))
 		}).Should(Succeed())
-
-		By("failing if the secret does not contain a kubeconfig")
-		invalidSecret := providerSecret
-		delete(invalidSecret.Data, "kubeconfig")
-		Eventually(func(g Gomega) {
-			_, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
-				Machine:      newMachine(ns, "machine", -1, nil),
-				MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
-				Secret:       invalidSecret,
-			})
-			g.Expect(err.Error()).To(ContainSubstring("kubeconfig is required"))
-		}).Should(Succeed())
-
-		By("failing if the secret does not contain a namespace")
-		invalidSecret = providerSecret
-		delete(invalidSecret.Data, "namespace")
-		Eventually(func(g Gomega) {
-			_, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
-				Machine:      newMachine(ns, "machine", -1, nil),
-				MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
-				Secret:       invalidSecret,
-			})
-			g.Expect(err.Error()).To(ContainSubstring("namespace is required"))
-		}).Should(Succeed())
 	})
 })

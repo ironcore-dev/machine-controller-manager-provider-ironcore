@@ -39,26 +39,13 @@ func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMac
 	klog.V(3).Infof("Machine status request has been received for %q", req.Machine.Name)
 	defer klog.V(3).Infof("Machine status request has been processed for %q", req.Machine.Name)
 
-	// Get namespace from machine secret
-	namespace, ok := req.Secret.Data["namespace"]
-	if !ok {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
-	}
-
-	// Create k8s client for the user provided machine secret. This client will be used
-	// to create the resources in the user provided namespace.
-	k8sClient, err := d.createK8sClient(req.Secret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
-	}
-
 	// Fetch machine key from machine request
 	onmetalMachineKey := client.ObjectKey{
-		Namespace: string(namespace),
+		Namespace: d.OnmetalNamespace,
 		Name:      req.Machine.Name,
 	}
 	onmetalMachine := &computev1alpha1.Machine{}
-	if err := k8sClient.Get(ctx, onmetalMachineKey, onmetalMachine); err != nil {
+	if err := d.OnmetelClient.Get(ctx, onmetalMachineKey, onmetalMachine); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}

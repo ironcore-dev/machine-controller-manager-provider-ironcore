@@ -36,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // CreateMachine handles a machine creation request
@@ -80,12 +79,6 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find user-data in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
 
-	// Get namespace from machine secret
-	namespace, ok := req.Secret.Data["namespace"]
-	if !ok {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
-	}
-
 	// Construct ignition file config
 	config := &ignition.Config{
 		Hostname:         req.Machine.Name,
@@ -108,7 +101,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: string(namespace),
+			Namespace: d.OnmetalNamespace,
 		},
 		Data: ignitionData,
 	}
@@ -120,7 +113,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: string(namespace),
+			Namespace: d.OnmetalNamespace,
 			Labels:    providerSpec.Labels,
 		},
 		Spec: computev1alpha1.MachineSpec{
@@ -196,22 +189,11 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		}
 	}
 
-	// Create k8s client for the user provided machine secret. This client will be used
-	// to create the resources in the user provided namespace.
-	k8sClient, err := d.createK8sClient(req.Secret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
-	}
-
-	if err := k8sClient.Patch(ctx, onmetalMachine, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+	if err := d.OnmetelClient.Patch(ctx, onmetalMachine, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying onmetal machine: %s", err.Error()))
 	}
 
-	if err := controllerutil.SetControllerReference(onmetalMachine, ignitionSecret, k8sClient.Scheme()); err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("could not set ignition secret ownership: %s", err.Error()))
-	}
-
-	if err := k8sClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+	if err := d.OnmetelClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ignition secret: %s", err.Error()))
 	}
 

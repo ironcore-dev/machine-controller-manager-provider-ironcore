@@ -19,14 +19,9 @@ import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
-	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -41,47 +36,21 @@ var (
 )
 
 type onmetalDriver struct {
-	Schema *runtime.Scheme
+	Schema           *runtime.Scheme
+	OnmetelClient    client.Client
+	OnmetalNamespace string
 }
 
 // NewDriver returns a new Gardener on Metal driver object
-func NewDriver(schema *runtime.Scheme) driver.Driver {
+func NewDriver(c client.Client, namespace string) driver.Driver {
 	return &onmetalDriver{
-		Schema: schema,
+		OnmetelClient:    c,
+		OnmetalNamespace: namespace,
 	}
 }
 
 func (d *onmetalDriver) GenerateMachineClassForMigration(_ context.Context, _ *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
 	return &driver.GenerateMachineClassForMigrationResponse{}, nil
-}
-
-func (d *onmetalDriver) createK8sClient(secret *corev1.Secret) (client.Client, error) {
-	kubeconfig, ok := secret.Data["kubeconfig"]
-	if !ok {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("no kubeconfig found in machine secret %s", client.ObjectKeyFromObject(secret)))
-	}
-
-	cfg, err := restConfigFromBytes(kubeconfig)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to load client config from machine secret %s: %v", client.ObjectKeyFromObject(secret), err))
-	}
-	k8sClient, err := client.New(cfg, client.Options{Scheme: d.Schema})
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client: %v", err))
-	}
-	return k8sClient, nil
-}
-
-func restConfigFromBytes(kubeconfig []byte) (*rest.Config, error) {
-	clientCfg, err := clientcmd.NewClientConfigFromBytes(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := clientCfg.ClientConfig()
-	if err != nil {
-		return nil, err
-	}
-	return cfg, nil
 }
 
 func getIgnitionNameForMachine(machineName string) string {

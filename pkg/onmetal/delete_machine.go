@@ -45,27 +45,14 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	klog.V(3).Infof("Machine deletion request has been received for %q", req.Machine.Name)
 	defer klog.V(3).Infof("Machine deletion request has been processed for %q", req.Machine.Name)
 
-	// Get namespace from machine secret
-	namespace, ok := req.Secret.Data["namespace"]
-	if !ok {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
-	}
-
-	// Create k8s client for the user provided machine secret. This client will be used
-	// to create the resources in the user provided namespace.
-	k8sClient, err := d.createK8sClient(req.Secret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
-	}
-
 	ignitionSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: string(namespace),
+			Namespace: d.OnmetalNamespace,
 		},
 	}
 
-	if err := k8sClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
+	if err := d.OnmetelClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
 		// Unknown leads to short retry in machine controller
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting ignition secret: %s", err.Error()))
 	}
@@ -73,11 +60,11 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	onmetalMachine := &computev1alpha1.Machine{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: string(namespace),
+			Namespace: d.OnmetalNamespace,
 		},
 	}
 
-	if err := k8sClient.Delete(ctx, onmetalMachine); err != nil {
+	if err := d.OnmetelClient.Delete(ctx, onmetalMachine); err != nil {
 		if !apierrors.IsNotFound(err) {
 			// Unknown leads to short retry in machine controller
 			return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting pod: %s", err.Error()))
@@ -92,7 +79,7 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	defer cancel()
 
 	if err := wait.PollUntilWithContext(timeoutCtx, 5*time.Second, func(ctx context.Context) (bool, error) {
-		if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(onmetalMachine), onmetalMachine); err != nil {
+		if err := d.OnmetelClient.Get(ctx, client.ObjectKeyFromObject(onmetalMachine), onmetalMachine); err != nil {
 			if apierrors.IsNotFound(err) {
 				return true, nil
 			}
