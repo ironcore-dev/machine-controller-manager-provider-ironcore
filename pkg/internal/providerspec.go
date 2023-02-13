@@ -27,7 +27,6 @@ var (
 	"prefixName": "my-prefix",
 	"rootDisk": {
 		"volumeClassName": "foo",
-		"volumePoolName": "bar",
 		"size": "10Gi"
 	},
 	"ignitionSecret": {

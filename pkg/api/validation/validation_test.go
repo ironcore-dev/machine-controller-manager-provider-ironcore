@@ -55,30 +55,6 @@ var _ = Describe("Machine", func() {
 			fldPath,
 			Not(ContainElement(field.Required(fldPath.Child("userData"), "corev1 secret userData required"))),
 		),
-		Entry("no kubeconfig in secret",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{
-				Data: map[string][]byte{
-					"kubeconfig": nil,
-				},
-			},
-			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("kubeconfig"), "corev1 secret kubeconfig required"))),
-		),
-		Entry("no namespace in secret",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{
-				Data: map[string][]byte{
-					"namespace": nil,
-				},
-			},
-			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("namespace"), "corev1 secret namespace required"))),
-		),
 		Entry("no image",
 			&v1alpha1.ProviderSpec{
 				Image:    "",
@@ -87,14 +63,6 @@ var _ = Describe("Machine", func() {
 			&corev1.Secret{},
 			fldPath,
 			Not(ContainElement(field.Required(fldPath.Child("spec.image"), "provider's spec image required"))),
-		),
-		Entry("no rootdisk",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{},
-			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.rootdisk"), "provider spec's rootdisk required"))),
 		),
 		Entry("no volumeclass name",
 			&v1alpha1.ProviderSpec{
@@ -105,16 +73,6 @@ var _ = Describe("Machine", func() {
 			&corev1.Secret{},
 			fldPath,
 			Not(ContainElement(field.Required(fldPath.Child("spec.rootdisk.volumeclassname"), "provider spec's volumeclassname required"))),
-		),
-		Entry("no volumepool name",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{
-					VolumePoolName: "",
-				},
-			},
-			&corev1.Secret{},
-			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.rootdisk.volumepoolname"), "provider spec's volumepoolname required"))),
 		),
 		Entry("no network name",
 			&v1alpha1.ProviderSpec{

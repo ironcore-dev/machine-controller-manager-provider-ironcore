@@ -17,7 +17,6 @@ package validation
 import (
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -56,17 +55,9 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 
 func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
-	emptyRootDisk := resource.Quantity{}
-	if spec.RootDisk.Size == emptyRootDisk {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk"), "root disk is required"))
-	}
 
 	if spec.RootDisk.VolumeClassName == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk volumeclassname"), "volumeclassname is required"))
-	}
-
-	if spec.RootDisk.VolumePoolName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk volumepoolname"), "volumepoolname is required"))
 	}
 
 	if spec.Image == "" {
