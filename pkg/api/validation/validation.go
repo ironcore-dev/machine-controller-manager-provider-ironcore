@@ -24,6 +24,7 @@ import (
 func ValidateProviderSpecAndSecret(spec *v1alpha1.ProviderSpec, secret *corev1.Secret, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
+	allErrs = validateOnmetalMachineClassSpec(spec, field.NewPath("spec"))
 	allErrs = append(allErrs, validateSecret(secret, fldPath.Child("secretRef"))...)
 
 	return allErrs
@@ -39,6 +40,28 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 
 	if secret.Data["userData"] == nil {
 		allErrs = append(allErrs, field.Required(fldPath.Child("userData"), "userData is required"))
+	}
+
+	return allErrs
+}
+
+func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk volumeclassname"), "volumeclassname is required"))
+	}
+
+	if spec.Image == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image is required"))
+	}
+
+	if spec.NetworkName == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("networkname"), "networkname is required"))
+	}
+
+	if spec.PrefixName == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("prefixname"), "prefixname is required"))
 	}
 
 	return allErrs
