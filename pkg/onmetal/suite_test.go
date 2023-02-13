@@ -147,13 +147,12 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 		}, nil)
 		Expect(err).NotTo(HaveOccurred())
 
-		kubeconfigData, err := user.KubeConfig()
+		userCfg := user.Config()
+		userClient, err := client.New(userCfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).NotTo(HaveOccurred())
 
 		// create provider secret for the machine creation
 		secretData := map[string][]byte{}
-		secretData["kubeconfig"] = kubeconfigData
-		secretData["namespace"] = []byte(ns.Name)
 		secretData["userData"] = []byte("abcd")
 
 		*secret = corev1.Secret{
@@ -166,7 +165,7 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
 		DeferCleanup(k8sClient.Delete, ctx, secret)
 
-		drv = NewDriver(scheme.Scheme)
+		drv = NewDriver(userClient, ns.Name)
 	})
 
 	AfterEach(func() {

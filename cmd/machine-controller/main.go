@@ -22,7 +22,6 @@ import (
 	_ "github.com/gardener/machine-controller-manager/pkg/util/client/metrics/prometheus" // for client metric registration
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/app"
 	mcmoptions "github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
-	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/reflector/prometheus" // for reflector metric registration
 	_ "github.com/gardener/machine-controller-manager/pkg/util/workqueue/prometheus" // for workqueue metric registration
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal"
@@ -31,10 +30,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
 	logsv1 "k8s.io/component-base/logs/api/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/manager/signals"
+)
+
+var (
+	OnmetalKubeconfigPath string
 )
 
 func main() {
@@ -43,6 +48,7 @@ func main() {
 
 	options := logs.NewOptions()
 	logs.AddFlags(pflag.CommandLine)
+	AddExtraFlags(pflag.CommandLine)
 
 	flag.InitFlags()
 	logs.InitLogs()
@@ -53,7 +59,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	drv, err := newDriver()
+	onmetalClient, namespace, err := getOnmetalClientAndNamespace()
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	drv := onmetal.NewDriver(onmetalClient, namespace)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -65,10 +77,42 @@ func main() {
 	}
 }
 
-func newDriver() (driver.Driver, error) {
+func getOnmetalClientAndNamespace() (client.Client, string, error) {
 	s := runtime.NewScheme()
 	utilruntime.Must(scheme.AddToScheme(s))
 	utilruntime.Must(computev1alpha1.AddToScheme(s))
 	utilruntime.Must(corev1.AddToScheme(s))
-	return onmetal.NewDriver(s), nil
+
+	onmetalKubeconfigData, err := os.ReadFile(OnmetalKubeconfigPath)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to read onmetal kubeconfig %s: %w", OnmetalKubeconfigPath, err)
+	}
+	onmetalKubeconfig, err := clientcmd.Load(onmetalKubeconfigData)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to read onmetal cluster kubeconfig: %w", err)
+	}
+	clientConfig := clientcmd.NewDefaultClientConfig(*onmetalKubeconfig, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to serialize onmetal cluster kubeconfig: %w", err)
+	}
+	restConfig, err := clientConfig.ClientConfig()
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to get onmetal cluster rest config: %w", err)
+	}
+	namespace, _, err := clientConfig.Namespace()
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to get namespace from onmetal kubeconfig: %w", err)
+	}
+	if namespace == "" {
+		return nil, "", fmt.Errorf("got a empty namespace from onmetal kubeconfig")
+	}
+	client, err := client.New(restConfig, client.Options{Scheme: s})
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create client: %w", err)
+	}
+	return client, namespace, nil
+}
+
+func AddExtraFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&OnmetalKubeconfigPath, "onmetal-kubeconfig", "", "Path to the onmetal kubeconfig.")
 }

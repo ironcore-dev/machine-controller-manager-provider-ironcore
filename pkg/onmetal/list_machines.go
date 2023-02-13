@@ -35,19 +35,6 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 	klog.V(3).Infof("Machine list request has been received for %q", req.MachineClass.Name)
 	defer klog.V(3).Infof("Machine list request has been processed for %q", req.MachineClass.Name)
 
-	// Get namespace from machine secret
-	namespace, ok := req.Secret.Data["namespace"]
-	if !ok {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find namespace is machine secret %s", client.ObjectKeyFromObject(req.Secret)))
-	}
-
-	// Create k8s client for the user provided machine secret. This client will be used
-	// to create the resources in the user provided namespace.
-	k8sClient, err := d.createK8sClient(req.Secret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create k8s client for machine secret %s: %v", client.ObjectKeyFromObject(req.Secret), err))
-	}
-
 	providerSpec, err := validateProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
 		return nil, err
@@ -59,7 +46,7 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 	for k, v := range providerSpec.Labels {
 		matchingLabels[k] = v
 	}
-	if err := k8sClient.List(ctx, onmetalMachineList, client.InNamespace(namespace), matchingLabels); err != nil {
+	if err := d.OnmetelClient.List(ctx, onmetalMachineList, client.InNamespace(d.OnmetalNamespace), matchingLabels); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
