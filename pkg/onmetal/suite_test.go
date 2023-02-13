@@ -27,12 +27,14 @@ import (
 	"github.com/onmetal/controller-utils/modutils"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
 	envtestutils "github.com/onmetal/onmetal-api/utils/envtest"
 	"github.com/onmetal/onmetal-api/utils/envtest/apiserver"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -108,7 +110,7 @@ var _ = BeforeSuite(func() {
 	komega.SetClient(k8sClient)
 
 	apiSrv, err := apiserver.New(cfg, apiserver.Options{
-		MainPath:     "github.com/onmetal/onmetal-api/onmetal-apiserver/cmd/apiserver",
+		MainPath:     "github.com/onmetal/onmetal-api/cmd/onmetal-apiserver",
 		BuildOptions: []buildutils.BuildOption{buildutils.ModModeMod},
 		ETCDServers:  []string{testEnv.ControlPlane.Etcd.URL.String()},
 		Host:         testEnvExt.APIServiceInstallOptions.LocalServingHost,
@@ -140,6 +142,19 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 		Expect(k8sClient.Create(ctx, ns)).To(Succeed(), "failed to create test namespace")
 		DeferCleanup(k8sClient.Delete, ctx, ns)
 
+		By("creating a machine class")
+		machineClass := &computev1alpha1.MachineClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "machine-class",
+			},
+			Capabilities: corev1alpha1.ResourceList{
+				corev1alpha1.ResourceCPU:    resource.MustParse("1"),
+				corev1alpha1.ResourceMemory: resource.MustParse("1Gi"),
+			},
+		}
+		Expect(k8sClient.Create(ctx, machineClass)).To(Succeed())
+		DeferCleanup(k8sClient.Delete, ctx, machineClass)
+
 		// create kubeconfig which we will use as the provider secret to create our onmetal machine
 		user, err := testEnv.AddUser(envtest.User{
 			Name:   "dummy",
@@ -166,10 +181,6 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 		DeferCleanup(k8sClient.Delete, ctx, secret)
 
 		drv = NewDriver(userClient, ns.Name)
-	})
-
-	AfterEach(func() {
-		Expect(k8sClient.Delete(ctx, ns)).To(Succeed(), "failed to remote test namespace")
 	})
 
 	return ns, secret, &drv
@@ -219,7 +230,7 @@ func newMachineClass(providerName string, providerSpec []byte) *gardenermachinev
 		},
 		Provider: providerName,
 		NodeTemplate: &gardenermachinev1alpha1.NodeTemplate{
-			InstanceType: "my-instance-type",
+			InstanceType: "machine-class",
 			Region:       "foo",
 			Zone:         "az1",
 		},

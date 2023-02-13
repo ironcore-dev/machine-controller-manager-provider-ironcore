@@ -22,6 +22,7 @@ import (
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
 	commonv1alpha1 "github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
 	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
 	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
@@ -68,7 +69,7 @@ var _ = Describe("CreateMachine", func() {
 				ShootNameLabelKey:      "my-shoot",
 				ShootNamespaceLabelKey: "my-shoot-namespace",
 			}),
-			HaveField("Spec.MachineClassRef", corev1.LocalObjectReference{Name: "my-instance-type"}),
+			HaveField("Spec.MachineClassRef", corev1.LocalObjectReference{Name: "machine-class"}),
 			HaveField("Spec.MachinePoolRef", &corev1.LocalObjectReference{Name: "az1"}),
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
 			HaveField("Spec.NetworkInterfaces", ContainElement(computev1alpha1.NetworkInterface{
@@ -116,8 +117,8 @@ var _ = Describe("CreateMachine", func() {
 								VolumeClassRef: &corev1.LocalObjectReference{
 									Name: "foo",
 								},
-								Resources: corev1.ResourceList{
-									corev1.ResourceStorage: resource.MustParse("10Gi"),
+								Resources: corev1alpha1.ResourceList{
+									corev1alpha1.ResourceStorage: resource.MustParse("10Gi"),
 								},
 								Image: "my-image",
 							},

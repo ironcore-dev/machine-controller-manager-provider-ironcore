@@ -28,6 +28,7 @@ import (
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
 	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
 	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
 	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
@@ -177,8 +178,8 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 								VolumeClassRef: &corev1.LocalObjectReference{
 									Name: providerSpec.RootDisk.VolumeClassName,
 								},
-								Resources: corev1.ResourceList{
-									corev1.ResourceStorage: providerSpec.RootDisk.Size,
+								Resources: corev1alpha1.ResourceList{
+									corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size,
 								},
 								Image: providerSpec.Image,
 							},
