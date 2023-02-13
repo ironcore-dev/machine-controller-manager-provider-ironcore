@@ -56,7 +56,7 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if spec.RootDisk.VolumeClassName == "" {
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk volumeclassname"), "volumeclassname is required"))
 	}
 
@@ -70,10 +70,6 @@ func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field
 
 	if spec.PrefixName == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("prefixname"), "prefixname is required"))
-	}
-
-	if len(spec.Labels) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("labels"), "labels are required"))
 	}
 
 	return allErrs
