@@ -93,7 +93,8 @@ var _ = Describe("CreateMachine", func() {
 										Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
 											PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
 												Spec: ipamv1alpha1.PrefixSpec{
-													IPFamily: corev1.IPv4Protocol,
+													IPFamily:     corev1.IPv4Protocol,
+													PrefixLength: 1,
 													ParentRef: &corev1.LocalObjectReference{
 														Name: "my-prefix",
 													},
