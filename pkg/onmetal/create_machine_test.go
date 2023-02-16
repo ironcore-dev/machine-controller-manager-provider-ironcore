@@ -73,7 +73,7 @@ var _ = Describe("CreateMachine", func() {
 			HaveField("Spec.MachinePoolRef", &corev1.LocalObjectReference{Name: "az1"}),
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
 			HaveField("Spec.NetworkInterfaces", ContainElement(computev1alpha1.NetworkInterface{
-				Name: machineName,
+				Name: "primary",
 				NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
 					Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
 						NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
@@ -108,7 +108,7 @@ var _ = Describe("CreateMachine", func() {
 				},
 			})),
 			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
-				Name:   machineName,
+				Name:   "primary",
 				Device: pointer.String("oda"),
 				VolumeSource: computev1alpha1.VolumeSource{
 					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
