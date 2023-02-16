@@ -144,6 +144,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 											Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
 												PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
 													Spec: ipamv1alpha1.PrefixSpec{
+														PrefixLength: 1,
 														ParentRef: &corev1.LocalObjectReference{
 															Name: providerSpec.PrefixName,
 														},
