@@ -127,7 +127,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 			Power: computev1alpha1.PowerOn,
 			NetworkInterfaces: []computev1alpha1.NetworkInterface{
 				{
-					Name: req.Machine.Name,
+					Name: "primary",
 					NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
 						Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
 							NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
@@ -170,7 +170,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 	} else {
 		onmetalMachine.Spec.Volumes = []computev1alpha1.Volume{
 			{
-				Name: req.Machine.Name,
+				Name: "primary",
 				VolumeSource: computev1alpha1.VolumeSource{
 					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
 						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
