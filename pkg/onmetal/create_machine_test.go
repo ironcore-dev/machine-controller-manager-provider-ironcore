@@ -94,7 +94,7 @@ var _ = Describe("CreateMachine", func() {
 											PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
 												Spec: ipamv1alpha1.PrefixSpec{
 													IPFamily:     corev1.IPv4Protocol,
-													PrefixLength: 1,
+													PrefixLength: 32,
 													ParentRef: &corev1.LocalObjectReference{
 														Name: "my-prefix",
 													},
