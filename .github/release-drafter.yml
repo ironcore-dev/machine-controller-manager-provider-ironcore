@@ -51,6 +51,9 @@ autolabeler:
   - label: 'enhancement'
     branch:
       - '/enh\/.+/'
+  - label: 'chore'
+    branch:
+      - '/chore\/.+/'
 template: |
   ## Changes
   $CHANGES
