@@ -209,8 +209,8 @@ func newMachine(namespace *corev1.Namespace, prefix string, setMachineIndex int,
 		machine.Spec = gardenermachinev1alpha1.MachineSpec{
 			ProviderID: fmt.Sprintf("%s:///%s/%s-%d", v1alpha1.ProviderName, namespace.Name, prefix, setMachineIndex),
 		}
-		machine.Status = gardenermachinev1alpha1.MachineStatus{
-			Node: fmt.Sprintf("ip-%d", setMachineIndex),
+		machine.Labels = map[string]string{
+			gardenermachinev1alpha1.NodeLabelKey: fmt.Sprintf("ip-%d", setMachineIndex),
 		}
 	}
 

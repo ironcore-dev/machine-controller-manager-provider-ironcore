@@ -6,12 +6,12 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.17.0
 	github.com/gardener/gardener v1.65.0
-	github.com/gardener/machine-controller-manager v0.47.0
+	github.com/gardener/machine-controller-manager v0.48.1
 	github.com/google/addlicense v1.1.1
 	github.com/imdario/mergo v0.3.13
 	github.com/onmetal/controller-utils v0.7.0
-	github.com/onmetal/onmetal-api v0.0.13-0.20230209150448-b34e9ebc560c
-	github.com/onsi/ginkgo/v2 v2.8.4
+	github.com/onmetal/onmetal-api v0.0.13-0.20230304201918-33cea0a13e48
+	github.com/onsi/ginkgo/v2 v2.9.0
 	github.com/onsi/gomega v1.27.2
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.24.0
@@ -27,8 +27,8 @@ require (
 )
 
 replace (
-	github.com/gardener/machine-controller-manager => github.com/afritzler/machine-controller-manager v0.0.0-20221213081200-699074e5c9e6
-	k8s.io/client-go => k8s.io/client-go v0.26.1
+	github.com/gardener/machine-controller-manager => github.com/afritzler/machine-controller-manager v0.0.0-20230305121828-d4df935993dc
+	k8s.io/client-go => k8s.io/client-go v0.26.2
 )
 
 require (
@@ -104,10 +104,10 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.26.1 // indirect
-	k8s.io/apiserver v0.26.1 // indirect
-	k8s.io/cluster-bootstrap v0.26.1 // indirect
-	k8s.io/kube-aggregator v0.26.1 // indirect
+	k8s.io/apiextensions-apiserver v0.26.2 // indirect
+	k8s.io/apiserver v0.26.2 // indirect
+	k8s.io/cluster-bootstrap v0.26.2 // indirect
+	k8s.io/kube-aggregator v0.26.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20230109183929-3758b55a6596 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// GetMachineStatus handles a machine get status request
 func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
 	if isEmptyMachineStatusRequest(req) {
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
