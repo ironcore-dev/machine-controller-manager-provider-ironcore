@@ -35,7 +35,6 @@ import (
 	"k8s.io/component-base/logs"
 	logsv1 "k8s.io/component-base/logs/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	ctrl "sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 var (
@@ -71,7 +70,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := app.Run(ctrl.SetupSignalHandler(), s, drv); err != nil {
+	if err := app.Run(s, drv); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
