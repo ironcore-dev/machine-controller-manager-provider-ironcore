@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.17.0
-	github.com/gardener/gardener v1.65.0
+	github.com/gardener/gardener v1.65.1
 	github.com/gardener/machine-controller-manager v0.48.1
 	github.com/google/addlicense v1.1.1
 	github.com/imdario/mergo v0.3.13
