@@ -18,6 +18,8 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"net/netip"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
@@ -32,11 +34,18 @@ var (
 	IgnitionTemplate string
 )
 
+const (
+	dnsConfFile    = "/etc/systemd/resolved.conf.d/dns.conf"
+	dnsEqualString = "DNS="
+	fileMode       = 0644
+)
+
 type Config struct {
 	Hostname         string
 	UserData         string
 	Ignition         string
 	IgnitionOverride bool
+	DnsServers       []netip.Addr
 }
 
 func File(config *Config) (string, error) {
@@ -65,6 +74,31 @@ func File(config *Config) (string, error) {
 		err := mergo.Merge(ignitionBase, additional, opt)
 		if err != nil {
 			return "", err
+		}
+	}
+
+	if len(config.DnsServers) > 0 {
+		dnsServers := []string{"[Resolve]"}
+		for _, v := range config.DnsServers {
+			dnsEntry := fmt.Sprintf("%s%s", dnsEqualString, v.String())
+			dnsServers = append(dnsServers, dnsEntry)
+		}
+
+		dnsConf := map[string]interface{}{
+			"storage": map[string]interface{}{
+				"files": []interface{}{map[string]interface{}{
+					"path": dnsConfFile,
+					"mode": fileMode,
+					"contents": map[string]interface{}{
+						"inline": strings.Join(dnsServers, "\n"),
+					},
+				}},
+			},
+		}
+
+		// merge dnsConfiguration with ignition content
+		if err := mergo.Merge(ignitionBase, dnsConf, mergo.WithAppendSlice); err != nil {
+			return "", fmt.Errorf("failed to merge dnsServer configuration with igntition content: %w", err)
 		}
 	}
 
