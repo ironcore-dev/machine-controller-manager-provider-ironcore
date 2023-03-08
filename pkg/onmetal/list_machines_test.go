@@ -29,23 +29,104 @@ var _ = Describe("ListMachines", func() {
 	ctx := testutils.SetupContext()
 	ns, providerSecret, drv := SetupTest(ctx)
 
-	It("should create a machine", func() {
-		By("creating machine")
-		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+	It("should fail if no provider has been set", func() {
+		By("ensuring an error if no provider has been set")
+		_, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
+			MachineClass: newMachineClass("", internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).To(HaveOccurred())
+	})
+
+	It("should list no machines if none have been created", func() {
+		By("ensuring the list response contains no machines")
+		listMachineResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(listMachineResponse.MachineList).To(Equal(map[string]string{}))
+	})
+
+	It("should list a single machine if one has been created", func() {
+		By("creating a machine")
+		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
 			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
 			Secret:       providerSecret,
-		})).To(Equal(&driver.CreateMachineResponse{
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(craeteMachineResponse).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
 			NodeName:   "machine-0",
 		}))
 
-		By("ensuring the machine status is set")
-		Expect((*drv).ListMachines(ctx, &driver.ListMachinesRequest{
+		By("ensuring the list response contains the correct machine")
+		listMachineResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
 			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
 			Secret:       providerSecret,
-		})).To(Equal(&driver.ListMachinesResponse{
-			MachineList: map[string]string{fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0): "machine-0"},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(listMachineResponse.MachineList).To(Equal(
+			map[string]string{fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0): "machine-0"},
+		))
+
+		By("ensuring the cleanup of the machine")
+		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+	})
+
+	It("should list two machines if two have been created", func() {
+		By("creating the first machine")
+		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", 0, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(craeteMachineResponse).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
+			NodeName:   "machine-0",
 		}))
+
+		By("creating the second machine")
+		craeteMachineResponse, err = (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", 1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(craeteMachineResponse).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 1),
+			NodeName:   "machine-1",
+		}))
+
+		By("ensuring the machine status contains 2 machines")
+		listMachinesResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(listMachinesResponse.MachineList).To(Equal(map[string]string{
+			fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0): "machine-0",
+			fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 1): "machine-1",
+		}))
+
+		By("ensuring the cleanup of the first machine")
+		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+			Machine:      newMachine(ns, "machine", 0, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
+
+		By("ensuring the cleanup of the second machine")
+		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+			Machine:      newMachine(ns, "machine", 1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			Secret:       providerSecret,
+		})
 	})
 })

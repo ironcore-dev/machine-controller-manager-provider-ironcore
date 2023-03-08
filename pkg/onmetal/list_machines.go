@@ -37,7 +37,7 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 
 	providerSpec, err := validateProviderSpecAndSecret(req.MachineClass, req.Secret)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("provider spec for requested provider '%s' is invalid: %v", req.MachineClass.Provider, err))
 	}
 
 	// Get onmetal machine list
