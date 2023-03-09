@@ -28,7 +28,7 @@ func ValidateProviderSpecAndSecret(spec *v1alpha1.ProviderSpec, secret *corev1.S
 	var allErrs field.ErrorList
 
 	allErrs = validateOnmetalMachineClassSpec(spec, field.NewPath("spec"))
-	allErrs = append(allErrs, validateSecret(secret, fldPath.Child("secretRef"))...)
+	allErrs = append(allErrs, validateSecret(secret, field.NewPath("spec"))...)
 
 	return allErrs
 }
@@ -37,12 +37,12 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 	var allErrs field.ErrorList
 
 	if secret == nil {
-		allErrs = append(allErrs, field.Required(fldPath.Child(""), "secretRef is required"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("secretRef"), "secretRef is required"))
 		return allErrs
 	}
 
 	if secret.Data["userData"] == nil {
-		allErrs = append(allErrs, field.Required(fldPath.Child("userData"), "userData is required"))
+		allErrs = append(allErrs, field.Required(field.NewPath("userData"), "userData is required"))
 	}
 
 	return allErrs
@@ -52,7 +52,7 @@ func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field
 	var allErrs field.ErrorList
 
 	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootdisk volumeclassname"), "volumeclassname is required"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("rootDisk").Child("volumeClassName"), "volumeClassName is required"))
 	}
 
 	if spec.Image == "" {
@@ -60,16 +60,16 @@ func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field
 	}
 
 	if spec.NetworkName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("networkname"), "networkname is required"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("networkName"), "networkName is required"))
 	}
 
 	if spec.PrefixName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("prefixname"), "prefixname is required"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("prefixName"), "prefixName is required"))
 	}
 
 	for i, ip := range spec.DnsServers {
 		if !netip.Addr.IsValid(ip) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("dnsserver").Index(i), ip, "must specify a valid ip for dnsserver"))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("dnsServers").Index(i), ip, "ip is invalid"))
 		}
 	}
 

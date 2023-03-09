@@ -45,7 +45,7 @@ var _ = Describe("Machine", func() {
 			},
 			nil,
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child(""), "corev1 secret required"))),
+			ContainElement(field.Required(fldPath.Child("spec.secretRef"), "secretRef is required")),
 		),
 		Entry("no userData in secret",
 			&v1alpha1.ProviderSpec{
@@ -57,7 +57,7 @@ var _ = Describe("Machine", func() {
 				},
 			},
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("userData"), "corev1 secret userData required"))),
+			ContainElement(field.Required(fldPath.Child("userData"), "userData is required")),
 		),
 		Entry("no image",
 			&v1alpha1.ProviderSpec{
@@ -66,7 +66,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.image"), "provider's spec image required"))),
+			ContainElement(field.Required(fldPath.Child("spec.image"), "image is required")),
 		),
 		Entry("no volumeclass name",
 			&v1alpha1.ProviderSpec{
@@ -76,7 +76,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.rootdisk.volumeclassname"), "provider spec's volumeclassname required"))),
+			ContainElement(field.Required(fldPath.Child("spec.rootDisk.volumeClassName"), "volumeClassName is required")),
 		),
 		Entry("no network name",
 			&v1alpha1.ProviderSpec{
@@ -85,7 +85,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.networkname"), "provider spec's network name required"))),
+			ContainElement(field.Required(fldPath.Child("spec.networkName"), "networkName is required")),
 		),
 		Entry("no prefix name",
 			&v1alpha1.ProviderSpec{
@@ -94,7 +94,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			Not(ContainElement(field.Required(fldPath.Child("spec.prefixname"), "provider spec's prefixname required"))),
+			ContainElement(field.Required(fldPath.Child("spec.prefixName"), "prefixName is required")),
 		),
 		Entry("invalid dns server ip",
 			&v1alpha1.ProviderSpec{
@@ -103,7 +103,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			Not(ContainElement(field.Invalid(fldPath.Child("spec.dnsservers"), invalidIP, "provider spec's dnsserver valid ip required"))),
+			ContainElement(field.Invalid(fldPath.Child("spec.dnsServers[0]"), invalidIP, "ip is invalid")),
 		),
 	)
 })
