@@ -19,7 +19,7 @@ import (
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
@@ -38,7 +38,7 @@ var _ = Describe("DeleteMachine", func() {
 		By("creating an onmetal machine")
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
@@ -62,7 +62,7 @@ var _ = Describe("DeleteMachine", func() {
 		By("ensuring that the machine can be deleted")
 		response, err := (*drv).DeleteMachine(ctx, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())

@@ -19,7 +19,7 @@ import (
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
 	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -32,7 +32,7 @@ var _ = Describe("ListMachines", func() {
 	It("should fail if no provider has been set", func() {
 		By("ensuring an error if no provider has been set")
 		_, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
-			MachineClass: newMachineClass("", internal.ProviderSpec),
+			MachineClass: newMachineClass("", testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).To(HaveOccurred())
@@ -41,7 +41,7 @@ var _ = Describe("ListMachines", func() {
 	It("should list no machines if none have been created", func() {
 		By("ensuring the list response contains no machines")
 		listMachineResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -52,7 +52,7 @@ var _ = Describe("ListMachines", func() {
 		By("creating a machine")
 		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -63,7 +63,7 @@ var _ = Describe("ListMachines", func() {
 
 		By("ensuring the list response contains the correct machine")
 		listMachineResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -74,7 +74,7 @@ var _ = Describe("ListMachines", func() {
 		By("ensuring the cleanup of the machine")
 		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 	})
@@ -83,7 +83,7 @@ var _ = Describe("ListMachines", func() {
 		By("creating the first machine")
 		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", 0, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -95,7 +95,7 @@ var _ = Describe("ListMachines", func() {
 		By("creating the second machine")
 		craeteMachineResponse, err = (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", 1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -106,7 +106,7 @@ var _ = Describe("ListMachines", func() {
 
 		By("ensuring the machine status contains 2 machines")
 		listMachinesResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -118,14 +118,14 @@ var _ = Describe("ListMachines", func() {
 		By("ensuring the cleanup of the first machine")
 		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", 0, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 
 		By("ensuring the cleanup of the second machine")
 		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", 1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 	})

@@ -16,6 +16,7 @@ package onmetal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -223,10 +224,12 @@ func newMachine(namespace *corev1.Namespace, prefix string, setMachineIndex int,
 	return machine
 }
 
-func newMachineClass(providerName string, providerSpec []byte) *gardenermachinev1alpha1.MachineClass {
+func newMachineClass(providerName string, providerSpec map[string]interface{}) *gardenermachinev1alpha1.MachineClass {
+	providerSpecJSON, err := json.Marshal(providerSpec)
+	Expect(err).ShouldNot(HaveOccurred())
 	return &gardenermachinev1alpha1.MachineClass{
 		ProviderSpec: runtime.RawExtension{
-			Raw: providerSpec,
+			Raw: providerSpecJSON,
 		},
 		Provider: providerName,
 		NodeTemplate: &gardenermachinev1alpha1.NodeTemplate{
