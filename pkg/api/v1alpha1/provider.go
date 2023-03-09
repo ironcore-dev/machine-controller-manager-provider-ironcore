@@ -15,6 +15,8 @@
 package v1alpha1
 
 import (
+	"net/netip"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -45,6 +47,8 @@ type ProviderSpec struct {
 	PrefixName string `json:"prefixName"`
 	// Labels are used to tag resources which the MCM creates, so they can be identified later.
 	Labels map[string]string `json:"labels,omitempty"`
+	// DnsServers is a list of DNS resolvers which should be configured on the host.
+	DnsServers []netip.Addr `json:"dnsServers,omitempty"`
 }
 
 // RootDisk defines the root disk properties of the Machine.

@@ -15,9 +15,12 @@
 package validation
 
 import (
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
+	"net/netip"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 )
 
 // ValidateProviderSpecAndSecret validates the provider spec and provider secret
@@ -62,6 +65,12 @@ func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field
 
 	if spec.PrefixName == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("prefixname"), "prefixname is required"))
+	}
+
+	for i, ip := range spec.DnsServers {
+		if !netip.Addr.IsValid(ip) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("dnsserver").Index(i), ip, "must specify a valid ip for dnsserver"))
+		}
 	}
 
 	return allErrs

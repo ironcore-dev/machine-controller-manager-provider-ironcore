@@ -23,6 +23,12 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/validation"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
@@ -32,11 +38,6 @@ import (
 	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
 	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/klog"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // CreateMachine handles a machine creation request
@@ -85,6 +86,7 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		Hostname:         req.Machine.Name,
 		UserData:         string(userData),
 		Ignition:         providerSpec.Ignition,
+		DnsServers:       providerSpec.DnsServers,
 		IgnitionOverride: providerSpec.IgnitionOverride,
 	}
 	ignitionContent, err := ignition.File(config)
