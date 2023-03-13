@@ -15,19 +15,13 @@
 package onmetal
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
-	. "sigs.k8s.io/controller-runtime/pkg/envtest/komega"
-
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
 	commonv1alpha1 "github.com/onmetal/onmetal-api/api/common/v1alpha1"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
 	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
@@ -35,10 +29,13 @@ import (
 	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
 	testutils "github.com/onmetal/onmetal-api/utils/testing"
-)
-
-var (
-	SampleIgnition = []byte(`{"ignition":{"version":"3.2.0"},"passwd":{"users":[{"groups":["group1"],"name":"xyz","shell":"/bin/bash"}]},"storage":{"files":[{"overwrite":true,"path":"/etc/hostname","contents":{"compression":"","source":"data:,machine-0%0A"},"mode":420},{"overwrite":true,"path":"/var/lib/onmetal-cloud-config/init.sh","contents":{"compression":"","source":"data:,abcd%0A"},"mode":493},{"path":"/etc/systemd/resolved.conf.d/dns.conf","contents":{"compression":"","source":"data:,%5BResolve%5D%0ADNS%3D1.2.3.4%0ADNS%3D5.6.7.8"},"mode":420}]},"systemd":{"units":[{"contents":"[Unit]\nWants=network-online.target\nAfter=network-online.target\nConditionPathExists=!/var/lib/onmetal-cloud-config/init.done\n\n[Service]\nType=oneshot\nExecStart=/var/lib/onmetal-cloud-config/init.sh\nExecStopPost=touch /var/lib/onmetal-cloud-config/init.done\nRestart=on-failure\nRestartSec=5\n\n[Install]\nWantedBy=multi-user.target\n","enabled":true,"name":"cloud-config-init.service"}]}}`)
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
+	. "sigs.k8s.io/controller-runtime/pkg/envtest/komega"
 )
 
 var _ = Describe("CreateMachine", func() {
@@ -50,7 +47,7 @@ var _ = Describe("CreateMachine", func() {
 		machineName := "machine-0"
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
@@ -141,10 +138,11 @@ var _ = Describe("CreateMachine", func() {
 				Name:      fmt.Sprintf("%s-ignition", machineName),
 			},
 		}
+
+		ignitionData, err := json.Marshal(testing.SampleIgnition)
+		Expect(err).NotTo(HaveOccurred())
 		Eventually(Object(ignition)).Should(SatisfyAll(
-			HaveField("Data", map[string][]byte{
-				"ignition.json": SampleIgnition,
-			}),
+			HaveField("Data", HaveKeyWithValue("ignition.json", MatchJSON(ignitionData))),
 		))
 
 		By("failing if the machine request is empty")
@@ -157,7 +155,7 @@ var _ = Describe("CreateMachine", func() {
 		Eventually(func(g Gomega) {
 			_, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 				Machine:      newMachine(ns, "machine", -1, nil),
-				MachineClass: newMachineClass("foo", internal.ProviderSpec),
+				MachineClass: newMachineClass("foo", testing.SampleProviderSpec),
 				Secret:       providerSecret,
 			})
 			g.Expect(err.Error()).To(ContainSubstring("not supported by the driver"))
@@ -165,12 +163,14 @@ var _ = Describe("CreateMachine", func() {
 
 		By("failing if the invalid IP is set for dnsServers in provider")
 		Eventually(func(g Gomega) {
+			SampleProviderSpec := testing.Copy(testing.SampleProviderSpec)
+			SampleProviderSpec["dnsServers"] = append(testing.SampleProviderSpec["dnsServers"].([]net.IP), net.ParseIP("invalid-dns-ips"))
 			_, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 				Machine:      newMachine(ns, "machine", -1, nil),
-				MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpecWithInvalidDNS),
+				MachineClass: newMachineClass(v1alpha1.ProviderName, SampleProviderSpec),
 				Secret:       providerSecret,
 			})
-			g.Expect(err.Error()).To(ContainSubstring("unable to parse IP"))
+			g.Expect(err.Error()).To(ContainSubstring("invalid IP"))
 		}).Should(Succeed())
 	})
 })

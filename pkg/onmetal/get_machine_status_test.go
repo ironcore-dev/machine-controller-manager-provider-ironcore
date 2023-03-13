@@ -21,7 +21,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/internal"
+	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
 	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -45,7 +45,7 @@ var _ = Describe("GetMachineStatus", func() {
 		By("creating machine")
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.CreateMachineResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
@@ -55,7 +55,7 @@ var _ = Describe("GetMachineStatus", func() {
 		By("ensuring the machine status")
 		Expect((*drv).GetMachineStatus(ctx, &driver.GetMachineStatusRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
-			MachineClass: newMachineClass(v1alpha1.ProviderName, internal.ProviderSpec),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})).To(Equal(&driver.GetMachineStatusResponse{
 			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
