@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.17.0
 	github.com/gardener/gardener v1.66.0
-	github.com/gardener/machine-controller-manager v0.48.1
+	github.com/gardener/machine-controller-manager v0.48.1-0.20230316071156-a00b3a8fb489
 	github.com/google/addlicense v1.1.1
 	github.com/imdario/mergo v0.3.14
 	github.com/onmetal/controller-utils v0.7.0
@@ -26,10 +26,7 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
-replace (
-	github.com/gardener/machine-controller-manager => github.com/afritzler/machine-controller-manager v0.0.0-20230305121828-d4df935993dc
-	k8s.io/client-go => k8s.io/client-go v0.26.2
-)
+replace k8s.io/client-go => k8s.io/client-go v0.26.2
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
