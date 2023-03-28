@@ -8,7 +8,7 @@ require (
 	github.com/gardener/gardener v1.66.1
 	github.com/gardener/machine-controller-manager v0.48.1-0.20230316071156-a00b3a8fb489
 	github.com/google/addlicense v1.1.1
-	github.com/imdario/mergo v0.3.14
+	github.com/imdario/mergo v0.3.15
 	github.com/onmetal/controller-utils v0.7.0
 	github.com/onmetal/onmetal-api v0.1.0
 	github.com/onsi/ginkgo/v2 v2.9.2
