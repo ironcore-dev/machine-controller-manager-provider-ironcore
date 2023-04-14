@@ -7,7 +7,6 @@ require (
 	github.com/coreos/butane v0.18.0
 	github.com/gardener/gardener v1.66.1
 	github.com/gardener/machine-controller-manager v0.48.1-0.20230316071156-a00b3a8fb489
-	github.com/google/addlicense v1.1.1
 	github.com/imdario/mergo v0.3.15
 	github.com/onmetal/controller-utils v0.7.0
 	github.com/onmetal/onmetal-api v0.1.1
@@ -34,7 +33,6 @@ require (
 	github.com/aws/aws-sdk-go v1.44.204 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/clarketm/json v1.17.1 // indirect
 	github.com/coreos/go-json v0.0.0-20230131223807-18775e0fb4fb // indirect
@@ -88,7 +86,6 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
