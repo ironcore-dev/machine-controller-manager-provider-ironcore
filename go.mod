@@ -1,6 +1,6 @@
 module github.com/onmetal/machine-controller-manager-provider-onmetal
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
