@@ -81,6 +81,14 @@ docker-build: test ## Build docker image with the machine controller.
 docker-push: ## Push docker image with the machine controller.
 	docker push ${CONTROLLER_IMG}
 
+.PHONY: docs
+docs: gen-crd-api-reference-docs ## Run go generate to generate API reference documentation.
+	$(GEN_CRD_API_REFERENCE_DOCS) -api-dir ./pkg/api/v1alpha1 -config ./hack/api-reference/config.json -template-dir ./hack/api-reference/template -out-file ./docs/provider-spec.md
+
+.PHONY: generate
+generate: docs ## Generate project artefacts.
+	go mod tidy
+
 ##@ Deployment
 
 ifndef ignore-not-found
@@ -98,10 +106,12 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ADDLICENSE ?= $(LOCALBIN)/addlicense
+GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 ADDLICENSE_VERSION ?= v1.1.1
+GEN_CRD_API_REFERENCE_DOCS_VERSION ?= v0.3.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -123,3 +133,8 @@ $(GOIMPORTS): $(LOCALBIN)
 addlicense: $(ADDLICENSE) ## Download addlicense locally if necessary.
 $(ADDLICENSE): $(LOCALBIN)
 	test -s $(LOCALBIN)/addlicense || GOBIN=$(LOCALBIN) go install github.com/google/addlicense@$(ADDLICENSE_VERSION)
+
+.PHONY: gen-crd-api-reference-docs
+gen-crd-api-reference-docs: $(GEN_CRD_API_REFERENCE_DOCS) ## Download gen-crd-api-reference-docs locally if necessary.
+$(GEN_CRD_API_REFERENCE_DOCS): $(LOCALBIN)
+	test -s $(LOCALBIN)/gen-crd-api-reference-docs || GOBIN=$(LOCALBIN) go install github.com/ahmetb/gen-crd-api-reference-docs@$(GEN_CRD_API_REFERENCE_DOCS_VERSION)
