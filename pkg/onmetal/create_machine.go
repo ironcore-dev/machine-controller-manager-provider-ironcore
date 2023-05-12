@@ -192,6 +192,12 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 				},
 			},
 		}
+
+		if providerSpec.RootDisk != nil && providerSpec.RootDisk.VolumePoolName != "" {
+			onmetalMachine.Spec.Volumes[0].VolumeSource.Ephemeral.VolumeTemplate.Spec.VolumePoolRef = &corev1.LocalObjectReference{
+				Name: providerSpec.RootDisk.VolumePoolName,
+			}
+		}
 	}
 
 	if err := d.OnmetelClient.Patch(ctx, onmetalMachine, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
