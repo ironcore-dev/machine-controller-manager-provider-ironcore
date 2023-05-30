@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.18.0
-	github.com/gardener/gardener v1.66.1
+	github.com/gardener/gardener v1.71.2
 	github.com/gardener/machine-controller-manager v0.49.1
 	github.com/imdario/mergo v0.3.16
 	github.com/onmetal/controller-utils v0.7.0
@@ -97,9 +97,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.26.2 // indirect
+	k8s.io/apiextensions-apiserver v0.26.3 // indirect
 	k8s.io/apiserver v0.26.3 // indirect
-	k8s.io/cluster-bootstrap v0.26.2 // indirect
+	k8s.io/cluster-bootstrap v0.26.3 // indirect
 	k8s.io/kube-aggregator v0.26.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20230109183929-3758b55a6596 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
