@@ -7,7 +7,7 @@ require (
 	github.com/coreos/butane v0.18.0
 	github.com/gardener/gardener v1.66.1
 	github.com/gardener/machine-controller-manager v0.49.1
-	github.com/imdario/mergo v0.3.15
+	github.com/imdario/mergo v0.3.16
 	github.com/onmetal/controller-utils v0.7.0
 	github.com/onmetal/onmetal-api v0.1.1
 	github.com/onsi/ginkgo/v2 v2.9.5
