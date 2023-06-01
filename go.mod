@@ -14,13 +14,13 @@ require (
 	github.com/onsi/gomega v1.27.7
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.26.3
-	k8s.io/apimachinery v0.26.3
+	k8s.io/api v0.27.2
+	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.26.3
+	k8s.io/component-base v0.27.2
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.100.1
-	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448
+	k8s.io/utils v0.0.0-20230209194617-a36077c30491
 	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -76,7 +76,6 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
@@ -101,7 +100,7 @@ require (
 	k8s.io/apiserver v0.26.3 // indirect
 	k8s.io/cluster-bootstrap v0.26.3 // indirect
 	k8s.io/kube-aggregator v0.26.3 // indirect
-	k8s.io/kube-openapi v0.0.0-20230109183929-3758b55a6596 // indirect
-	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
+	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
