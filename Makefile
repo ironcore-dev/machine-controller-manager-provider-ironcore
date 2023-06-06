@@ -10,6 +10,7 @@ GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
+BUILDARGS ?=
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -75,7 +76,7 @@ run: fmt vet ## Run a machine controller from your host.
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the machine controller.
-	docker build -t ${CONTROLLER_IMG} .
+	docker build $(BUILDARGS) -t ${CONTROLLER_IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the machine controller.
