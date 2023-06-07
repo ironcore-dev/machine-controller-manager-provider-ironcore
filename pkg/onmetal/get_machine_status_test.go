@@ -22,16 +22,14 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
-	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("GetMachineStatus", func() {
-	ctx := testutils.SetupContext()
-	ns, providerSecret, drv := SetupTest(ctx)
+	ns, providerSecret, drv := SetupTest()
 
-	It("should create a machine and ensure status", func() {
+	It("should create a machine and ensure status", func(ctx SpecContext) {
 		By("check empty request")
 		emptyMacReq := &driver.GetMachineStatusRequest{
 			Machine:      nil,

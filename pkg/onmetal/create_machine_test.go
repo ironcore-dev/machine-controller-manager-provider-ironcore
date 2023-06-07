@@ -28,7 +28,6 @@ import (
 	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
 	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
-	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -39,10 +38,9 @@ import (
 )
 
 var _ = Describe("CreateMachine", func() {
-	ctx := testutils.SetupContext()
-	ns, providerSecret, drv := SetupTest(ctx)
+	ns, providerSecret, drv := SetupTest()
 
-	It("should create a machine", func() {
+	It("should create a machine", func(ctx SpecContext) {
 		By("creating machine")
 		machineName := "machine-0"
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{

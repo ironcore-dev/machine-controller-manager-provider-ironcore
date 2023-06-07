@@ -20,16 +20,14 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
-	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("ListMachines", func() {
-	ctx := testutils.SetupContext()
-	ns, providerSecret, drv := SetupTest(ctx)
+	ns, providerSecret, drv := SetupTest()
 
-	It("should fail if no provider has been set", func() {
+	It("should fail if no provider has been set", func(ctx SpecContext) {
 		By("ensuring an error if no provider has been set")
 		_, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
 			MachineClass: newMachineClass("", testing.SampleProviderSpec),
@@ -38,7 +36,7 @@ var _ = Describe("ListMachines", func() {
 		Expect(err).To(HaveOccurred())
 	})
 
-	It("should list no machines if none have been created", func() {
+	It("should list no machines if none have been created", func(ctx SpecContext) {
 		By("ensuring the list response contains no machines")
 		listMachineResponse, err := (*drv).ListMachines(ctx, &driver.ListMachinesRequest{
 			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
@@ -48,7 +46,7 @@ var _ = Describe("ListMachines", func() {
 		Expect(listMachineResponse.MachineList).To(Equal(map[string]string{}))
 	})
 
-	It("should list a single machine if one has been created", func() {
+	It("should list a single machine if one has been created", func(ctx SpecContext) {
 		By("creating a machine")
 		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
@@ -72,14 +70,14 @@ var _ = Describe("ListMachines", func() {
 		))
 
 		By("ensuring the cleanup of the machine")
-		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+		DeferCleanup((*drv).DeleteMachine, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),
 			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 	})
 
-	It("should list two machines if two have been created", func() {
+	It("should list two machines if two have been created", func(ctx SpecContext) {
 		By("creating the first machine")
 		craeteMachineResponse, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", 0, nil),
@@ -116,14 +114,14 @@ var _ = Describe("ListMachines", func() {
 		}))
 
 		By("ensuring the cleanup of the first machine")
-		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+		DeferCleanup((*drv).DeleteMachine, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", 0, nil),
 			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,
 		})
 
 		By("ensuring the cleanup of the second machine")
-		DeferCleanup((*drv).DeleteMachine, ctx, &driver.DeleteMachineRequest{
+		DeferCleanup((*drv).DeleteMachine, &driver.DeleteMachineRequest{
 			Machine:      newMachine(ns, "machine", 1, nil),
 			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
 			Secret:       providerSecret,

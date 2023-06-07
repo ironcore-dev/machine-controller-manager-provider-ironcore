@@ -49,6 +49,7 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: fmt vet envtest check-license ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	go mod tidy
 
 .PHONY: add-license
 add-license: addlicense ## Add license headers to all go files.
