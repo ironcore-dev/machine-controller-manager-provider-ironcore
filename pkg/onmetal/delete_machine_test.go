@@ -21,7 +21,6 @@ import (
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
 	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
 	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -31,10 +30,9 @@ import (
 )
 
 var _ = Describe("DeleteMachine", func() {
-	ctx := testutils.SetupContext()
-	ns, providerSecret, drv := SetupTest(ctx)
+	ns, providerSecret, drv := SetupTest()
 
-	It("should create and delete a machine", func() {
+	It("should create and delete a machine", func(ctx SpecContext) {
 		By("creating an onmetal machine")
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
 			Machine:      newMachine(ns, "machine", -1, nil),

@@ -15,7 +15,6 @@
 package onmetal
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -127,21 +126,21 @@ var _ = BeforeSuite(func() {
 	Expect(envtestutils.WaitUntilAPIServicesReadyWithTimeout(apiServiceTimeout, testEnvExt, k8sClient, scheme.Scheme)).To(Succeed())
 })
 
-func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.Driver) {
+func SetupTest() (*corev1.Namespace, *corev1.Secret, *driver.Driver) {
 	var (
 		drv driver.Driver
 	)
 	ns := &corev1.Namespace{}
 	secret := &corev1.Secret{}
 
-	BeforeEach(func() {
+	BeforeEach(func(ctx SpecContext) {
 		*ns = corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				GenerateName: "testns-",
 			},
 		}
 		Expect(k8sClient.Create(ctx, ns)).To(Succeed(), "failed to create test namespace")
-		DeferCleanup(k8sClient.Delete, ctx, ns)
+		DeferCleanup(k8sClient.Delete, ns)
 
 		By("creating a machine class")
 		machineClass := &computev1alpha1.MachineClass{
@@ -154,7 +153,7 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 			},
 		}
 		Expect(k8sClient.Create(ctx, machineClass)).To(Succeed())
-		DeferCleanup(k8sClient.Delete, ctx, machineClass)
+		DeferCleanup(k8sClient.Delete, machineClass)
 
 		// create kubeconfig which we will use as the provider secret to create our onmetal machine
 		user, err := testEnv.AddUser(envtest.User{
@@ -179,7 +178,6 @@ func SetupTest(ctx context.Context) (*corev1.Namespace, *corev1.Secret, *driver.
 			Data: secretData,
 		}
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
-		DeferCleanup(k8sClient.Delete, ctx, secret)
 
 		drv = NewDriver(userClient, ns.Name)
 	})

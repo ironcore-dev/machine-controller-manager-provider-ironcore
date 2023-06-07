@@ -15,16 +15,15 @@ package onmetal
 
 import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	testutils "github.com/onmetal/onmetal-api/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 )
 
 var _ = Describe("GetVolumeIDs", func() {
-	ctx := testutils.SetupContext()
-	_, _, drv := SetupTest(ctx)
-	It("should get volume IDs", func() {
+	_, _, drv := SetupTest()
+
+	It("should get volume IDs", func(ctx SpecContext) {
 		By("giving correct driver name")
 		csiDriverName := OnmetalCSIDriver
 		volumeIDs := []string{"vol-onmetal-csi"}
