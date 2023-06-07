@@ -75,10 +75,7 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	// Actively wait until the onmetal machine is deleted since the extension contract in machine-controller-manager expects drivers to
 	// do so. If we would not wait until the onmetal machine is gone it might happen that the kubelet could re-register the Node
 	// object even after it was already deleted by machine-controller-manager.
-	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
-
-	if err := wait.PollUntilWithContext(timeoutCtx, 5*time.Second, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 10*time.Minute, true, func(ctx context.Context) (bool, error) {
 		if err := d.OnmetelClient.Get(ctx, client.ObjectKeyFromObject(onmetalMachine), onmetalMachine); err != nil {
 			if apierrors.IsNotFound(err) {
 				return true, nil
