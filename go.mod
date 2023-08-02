@@ -13,7 +13,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.25.0
 	k8s.io/api v0.27.4
 	k8s.io/apimachinery v0.27.4
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
@@ -79,8 +79,7 @@ require (
 	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/stretchr/testify v1.8.3 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.9.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	go4.org/netipx v0.0.0-20220812043211-3cc044ffd68d // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
