@@ -11,12 +11,17 @@ jobs:
     name: check-codegen
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
+
       - name: Run make generate
         run: make generate
+
       - name: Compare the expected and actual generated/* directories
         run: |
           if [ "$(git diff | wc -l)" -gt "0" ]; then

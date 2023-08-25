@@ -1,6 +1,6 @@
 module github.com/onmetal/machine-controller-manager-provider-onmetal
 
-go 1.20
+go 1.21
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
@@ -25,7 +25,7 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.28.0
+replace k8s.io/client-go => k8s.io/client-go v0.28.1
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
