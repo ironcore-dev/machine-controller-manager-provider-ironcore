@@ -2,6 +2,8 @@ module github.com/onmetal/machine-controller-manager-provider-onmetal
 
 go 1.21
 
+toolchain go1.21.0
+
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.18.0
