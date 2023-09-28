@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.18.0
-	github.com/gardener/gardener v1.80.0
+	github.com/gardener/gardener v1.80.1
 	github.com/gardener/machine-controller-manager v0.50.0
 	github.com/imdario/mergo v0.3.16
 	github.com/onmetal/controller-utils v0.8.2
