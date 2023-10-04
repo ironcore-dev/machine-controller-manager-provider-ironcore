@@ -2,7 +2,7 @@
 CONTROLLER_IMG ?= controller:latest
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.26.0
+ENVTEST_K8S_VERSION = 1.28.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -49,7 +49,6 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: fmt vet envtest check-license ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
-	go mod tidy
 
 .PHONY: add-license
 add-license: addlicense ## Add license headers to all go files.
@@ -88,7 +87,6 @@ docs: gen-crd-api-reference-docs ## Run go generate to generate API reference do
 
 .PHONY: generate
 generate: docs ## Generate project artefacts.
-	go mod tidy
 
 ##@ Deployment
 
