@@ -45,8 +45,8 @@ github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/gardener/gardener v1.83.0 h1:lszriM/fi9A+TOKPOdQR93qAIhysBMFa4q2wpIU2S/8=
 github.com/gardener/gardener v1.83.0/go.mod h1:WbCEy0CuG3fk1QFDeQeagwvWRtA7FaiuP9ska9EA7Xc=
-github.com/gardener/machine-controller-manager v0.50.0 h1:3dcQjzueFU1TGgprV00adjb3OCR99myTBx8DQGxywks=
-github.com/gardener/machine-controller-manager v0.50.0/go.mod h1:RySZ40AgbNV/wMq60G/w49kb+okbj5Xs1A6usz5Pm/I=
+github.com/gardener/machine-controller-manager v0.50.1 h1:lL2q0O+K6jkgYzHPz85wIc9MzASZaiDvLYnTxW7P5ws=
+github.com/gardener/machine-controller-manager v0.50.1/go.mod h1:RySZ40AgbNV/wMq60G/w49kb+okbj5Xs1A6usz5Pm/I=
 github.com/go-logr/logr v0.1.0/go.mod h1:ixOQHD9gLJUVQQ2ZOR7zLEifBX6tGkNJF4QyIY7sIas=
 github.com/go-logr/logr v1.2.4/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.3.0 h1:2y3SDp0ZXuc6/cjLSZ+Q3ir+QB9T/iG5yYRXqsagWSY=
