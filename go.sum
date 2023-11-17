@@ -125,8 +125,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
-github.com/onmetal/controller-utils v0.8.2 h1:dMPTWivqFVIkSbHRtG9Xue+kVR+Hqu3Ag8ULDBQg5Jo=
-github.com/onmetal/controller-utils v0.8.2/go.mod h1:FNYXMHxQsZuEypdScP1ZEBK5i10XyCkNNGzhB6icglA=
+github.com/onmetal/controller-utils v0.8.3 h1:yIS9Gz+QO1oQEpXlfZFbnPz2fttpk4ZYBz0f80ovd48=
+github.com/onmetal/controller-utils v0.8.3/go.mod h1:8Inx1jd9R85PjFoQLMNDCQnYI5wMYcmnhK8DD2V4l50=
 github.com/onmetal/onmetal-api v0.1.2-0.20230928225058-754dd4d16010 h1:7nbhE1adc+HDDOpUyrD5gMqI/cfBuH60bcv3l/+V+v4=
 github.com/onmetal/onmetal-api v0.1.2-0.20230928225058-754dd4d16010/go.mod h1:hPpc+xzka053PkPZVk22qmVrAxJ4POlUn8WmdYEF4TE=
 github.com/onsi/ginkgo v1.16.2 h1:HFB2fbVIlhIfCfOW81bZFbiC/RvnpXSdhbF2/DJr134=
