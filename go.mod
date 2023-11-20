@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.19.0
-	github.com/gardener/gardener v1.83.1
+	github.com/gardener/gardener v1.84.0
 	github.com/gardener/machine-controller-manager v0.50.1
 	github.com/imdario/mergo v0.3.16
 	github.com/onmetal/controller-utils v0.8.3
