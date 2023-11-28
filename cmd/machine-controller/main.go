@@ -24,8 +24,8 @@ import (
 	mcmoptions "github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/reflector/prometheus" // for reflector metric registration
 	_ "github.com/gardener/machine-controller-manager/pkg/util/workqueue/prometheus" // for workqueue metric registration
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/ironcore"
 	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -38,7 +38,7 @@ import (
 )
 
 var (
-	OnmetalKubeconfigPath string
+	IroncoreKubeconfigPath string
 )
 
 func main() {
@@ -58,13 +58,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	onmetalClient, namespace, err := getOnmetalClientAndNamespace()
+	ironcoreClient, namespace, err := getIroncoreClientAndNamespace()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 
-	drv := onmetal.NewDriver(onmetalClient, namespace)
+	drv := ironcore.NewDriver(ironcoreClient, namespace)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -76,34 +76,34 @@ func main() {
 	}
 }
 
-func getOnmetalClientAndNamespace() (client.Client, string, error) {
+func getIroncoreClientAndNamespace() (client.Client, string, error) {
 	s := runtime.NewScheme()
 	utilruntime.Must(scheme.AddToScheme(s))
 	utilruntime.Must(computev1alpha1.AddToScheme(s))
 	utilruntime.Must(corev1.AddToScheme(s))
 
-	onmetalKubeconfigData, err := os.ReadFile(OnmetalKubeconfigPath)
+	ironcoreKubeconfigData, err := os.ReadFile(IroncoreKubeconfigPath)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to read onmetal kubeconfig %s: %w", OnmetalKubeconfigPath, err)
+		return nil, "", fmt.Errorf("failed to read ironcore kubeconfig %s: %w", IroncoreKubeconfigPath, err)
 	}
-	onmetalKubeconfig, err := clientcmd.Load(onmetalKubeconfigData)
+	ironcoreKubeconfig, err := clientcmd.Load(ironcoreKubeconfigData)
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to read onmetal cluster kubeconfig: %w", err)
+		return nil, "", fmt.Errorf("unable to read ironcore cluster kubeconfig: %w", err)
 	}
-	clientConfig := clientcmd.NewDefaultClientConfig(*onmetalKubeconfig, nil)
+	clientConfig := clientcmd.NewDefaultClientConfig(*ironcoreKubeconfig, nil)
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to serialize onmetal cluster kubeconfig: %w", err)
+		return nil, "", fmt.Errorf("unable to serialize ironcore cluster kubeconfig: %w", err)
 	}
 	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to get onmetal cluster rest config: %w", err)
+		return nil, "", fmt.Errorf("unable to get ironcore cluster rest config: %w", err)
 	}
 	namespace, _, err := clientConfig.Namespace()
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get namespace from onmetal kubeconfig: %w", err)
+		return nil, "", fmt.Errorf("failed to get namespace from ironcore kubeconfig: %w", err)
 	}
 	if namespace == "" {
-		return nil, "", fmt.Errorf("got a empty namespace from onmetal kubeconfig")
+		return nil, "", fmt.Errorf("got a empty namespace from ironcore kubeconfig")
 	}
 	client, err := client.New(restConfig, client.Options{Scheme: s})
 	if err != nil {
@@ -113,5 +113,5 @@ func getOnmetalClientAndNamespace() (client.Client, string, error) {
 }
 
 func AddExtraFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&OnmetalKubeconfigPath, "onmetal-kubeconfig", "", "Path to the onmetal kubeconfig.")
+	fs.StringVar(&IroncoreKubeconfigPath, "ironcore-kubeconfig", "", "Path to the ironcore kubeconfig.")
 }

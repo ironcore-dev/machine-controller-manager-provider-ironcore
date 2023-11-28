@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/onmetal/testing"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/ironcore/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

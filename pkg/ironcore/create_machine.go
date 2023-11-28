@@ -1,4 +1,4 @@
-// Copyright 2022 OnMetal authors
+// Copyright 2022 IronCore authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"context"
@@ -29,19 +29,19 @@ import (
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/validation"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/ignition"
-	"github.com/onmetal/onmetal-api/api/common/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
-	ipamv1alpha1 "github.com/onmetal/onmetal-api/api/ipam/v1alpha1"
-	networkingv1alpha1 "github.com/onmetal/onmetal-api/api/networking/v1alpha1"
-	storagev1alpha1 "github.com/onmetal/onmetal-api/api/storage/v1alpha1"
+	"github.com/ironcore-dev/ironcore/api/common/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
+	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
+	networkingv1alpha1 "github.com/ironcore-dev/ironcore/api/networking/v1alpha1"
+	storagev1alpha1 "github.com/ironcore-dev/ironcore/api/storage/v1alpha1"
+	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/validation"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/ignition"
 )
 
 // CreateMachine handles a machine creation request
-func (d *onmetalDriver) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
+func (d *ironcoreDriver) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
 	if isEmptyCreateRequest(req) {
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
 	}
@@ -57,14 +57,14 @@ func (d *onmetalDriver) CreateMachine(ctx context.Context, req *driver.CreateMac
 		return nil, err
 	}
 
-	onmetalMachine, err := d.applyOnMetalMachine(ctx, req, providerSpec)
+	ironcoreMachine, err := d.applyIronCoreMachine(ctx, req, providerSpec)
 	if err != nil {
 		return nil, err
 	}
 
 	return &driver.CreateMachineResponse{
-		ProviderID: getProviderIDForOnmetalMachine(onmetalMachine),
-		NodeName:   onmetalMachine.Name,
+		ProviderID: getProviderIDForIroncoreMachine(ironcoreMachine),
+		NodeName:   ironcoreMachine.Name,
 	}, nil
 }
 
@@ -73,8 +73,8 @@ func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 	return req == nil || req.MachineClass == nil || req.Machine == nil || req.Secret == nil
 }
 
-// applyOnMetalMachine takes care of creating actual onemetal Machine object with proper ignition data
-func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) (*computev1alpha1.Machine, error) {
+// applyIronCoreMachine takes care of creating actual ironcore Machine object with proper ignition data
+func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) (*computev1alpha1.Machine, error) {
 	// Get userData from machine secret
 	userData, ok := req.Secret.Data["userData"]
 	if !ok {
@@ -104,19 +104,19 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: d.OnmetalNamespace,
+			Namespace: d.IroncoreNamespace,
 		},
 		Data: ignitionData,
 	}
 
-	onmetalMachine := &computev1alpha1.Machine{
+	ironcoreMachine := &computev1alpha1.Machine{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: computev1alpha1.SchemeGroupVersion.String(),
 			Kind:       "Machine",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: d.OnmetalNamespace,
+			Namespace: d.IroncoreNamespace,
 			Labels:    providerSpec.Labels,
 		},
 		Spec: computev1alpha1.MachineSpec{
@@ -170,9 +170,9 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 	}
 
 	if providerSpec.RootDisk == nil {
-		onmetalMachine.Spec.Image = providerSpec.Image
+		ironcoreMachine.Spec.Image = providerSpec.Image
 	} else {
-		onmetalMachine.Spec.Volumes = []computev1alpha1.Volume{
+		ironcoreMachine.Spec.Volumes = []computev1alpha1.Volume{
 			{
 				Name: "primary",
 				VolumeSource: computev1alpha1.VolumeSource{
@@ -194,15 +194,15 @@ func (d *onmetalDriver) applyOnMetalMachine(ctx context.Context, req *driver.Cre
 		}
 	}
 
-	if err := d.OnmetelClient.Patch(ctx, onmetalMachine, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying onmetal machine: %s", err.Error()))
+	if err := d.IroncoreClient.Patch(ctx, ironcoreMachine, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ironcore machine: %s", err.Error()))
 	}
 
-	if err := d.OnmetelClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+	if err := d.IroncoreClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ignition secret: %s", err.Error()))
 	}
 
-	return onmetalMachine, nil
+	return ironcoreMachine, nil
 }
 
 // getIgnitionKeyOrDefault checks if key is empty otherwise return default ingintion key

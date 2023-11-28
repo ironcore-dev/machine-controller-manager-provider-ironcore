@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,24 +32,24 @@ const (
 )
 
 var (
-	fieldOwner = client.FieldOwner("mcm.onmetal.de/field-owner")
+	fieldOwner = client.FieldOwner("mcm.ironcore.de/field-owner")
 )
 
-type onmetalDriver struct {
-	Schema           *runtime.Scheme
-	OnmetelClient    client.Client
-	OnmetalNamespace string
+type ironcoreDriver struct {
+	Schema            *runtime.Scheme
+	IroncoreClient    client.Client
+	IroncoreNamespace string
 }
 
-// NewDriver returns a new Gardener on Metal driver object
+// NewDriver returns a new Gardener ironcore driver object
 func NewDriver(c client.Client, namespace string) driver.Driver {
-	return &onmetalDriver{
-		OnmetelClient:    c,
-		OnmetalNamespace: namespace,
+	return &ironcoreDriver{
+		IroncoreClient:    c,
+		IroncoreNamespace: namespace,
 	}
 }
 
-func (d *onmetalDriver) GenerateMachineClassForMigration(_ context.Context, _ *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
+func (d *ironcoreDriver) GenerateMachineClassForMigration(_ context.Context, _ *driver.GenerateMachineClassForMigrationRequest) (*driver.GenerateMachineClassForMigrationResponse, error) {
 	return &driver.GenerateMachineClassForMigrationResponse{}, nil
 }
 
@@ -57,6 +57,6 @@ func getIgnitionNameForMachine(machineName string) string {
 	return fmt.Sprintf("%s-%s", machineName, "ignition")
 }
 
-func getProviderIDForOnmetalMachine(onmetalMachine *computev1alpha1.Machine) string {
-	return fmt.Sprintf("%s://%s/%s", v1alpha1.ProviderName, onmetalMachine.Namespace, onmetalMachine.Name)
+func getProviderIDForIroncoreMachine(ironcoreMachine *computev1alpha1.Machine) string {
+	return fmt.Sprintf("%s://%s/%s", v1alpha1.ProviderName, ironcoreMachine.Namespace, ironcoreMachine.Name)
 }

@@ -20,14 +20,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 )
 
 // ValidateProviderSpecAndSecret validates the provider spec and provider secret
 func ValidateProviderSpecAndSecret(spec *v1alpha1.ProviderSpec, secret *corev1.Secret, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	allErrs = validateOnmetalMachineClassSpec(spec, field.NewPath("spec"))
+	allErrs = validateIroncoreMachineClassSpec(spec, field.NewPath("spec"))
 	allErrs = append(allErrs, validateSecret(secret, field.NewPath("spec"))...)
 
 	return allErrs
@@ -48,7 +48,7 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 	return allErrs
 }
 
-func validateOnmetalMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
+func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {

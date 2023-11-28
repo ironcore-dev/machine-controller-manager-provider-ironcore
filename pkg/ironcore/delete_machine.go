@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
+	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,11 +30,11 @@ import (
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 )
 
 // DeleteMachine handles a machine deletion request and also deletes ignitionSecret associated with it
-func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMachineRequest) (*driver.DeleteMachineResponse, error) {
+func (d *ironcoreDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMachineRequest) (*driver.DeleteMachineResponse, error) {
 	if isEmptyDeleteRequest(req) {
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
 	}
@@ -48,23 +48,23 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 	ignitionSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getIgnitionNameForMachine(req.Machine.Name),
-			Namespace: d.OnmetalNamespace,
+			Namespace: d.IroncoreNamespace,
 		},
 	}
 
-	if err := d.OnmetelClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
+	if err := d.IroncoreClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
 		// Unknown leads to short retry in machine controller
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting ignition secret: %s", err.Error()))
 	}
 
-	onmetalMachine := &computev1alpha1.Machine{
+	ironcoreMachine := &computev1alpha1.Machine{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      req.Machine.Name,
-			Namespace: d.OnmetalNamespace,
+			Namespace: d.IroncoreNamespace,
 		},
 	}
 
-	if err := d.OnmetelClient.Delete(ctx, onmetalMachine); err != nil {
+	if err := d.IroncoreClient.Delete(ctx, ironcoreMachine); err != nil {
 		if !apierrors.IsNotFound(err) {
 			// Unknown leads to short retry in machine controller
 			return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting pod: %s", err.Error()))
@@ -72,11 +72,11 @@ func (d *onmetalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMac
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	// Actively wait until the onmetal machine is deleted since the extension contract in machine-controller-manager expects drivers to
-	// do so. If we would not wait until the onmetal machine is gone it might happen that the kubelet could re-register the Node
+	// Actively wait until the ironcore machine is deleted since the extension contract in machine-controller-manager expects drivers to
+	// do so. If we would not wait until the ironcore machine is gone it might happen that the kubelet could re-register the Node
 	// object even after it was already deleted by machine-controller-manager.
 	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 10*time.Minute, true, func(ctx context.Context) (bool, error) {
-		if err := d.OnmetelClient.Get(ctx, client.ObjectKeyFromObject(onmetalMachine), onmetalMachine); err != nil {
+		if err := d.IroncoreClient.Get(ctx, client.ObjectKeyFromObject(ironcoreMachine), ironcoreMachine); err != nil {
 			if apierrors.IsNotFound(err) {
 				return true, nil
 			}
