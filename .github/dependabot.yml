@@ -7,18 +7,18 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 10
     reviewers:
-      - "ironcore-dev/mcm-maintainers"
+      - "ironcore-dev/integration"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
     reviewers:
-      - "ironcore-dev/mcm-maintainers"
+      - "ironcore-dev/integration"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
     reviewers:
-      - "ironcore-dev/mcm-maintainers"
+      - "ironcore-dev/integration"
