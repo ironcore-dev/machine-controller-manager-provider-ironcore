@@ -23,7 +23,7 @@ import (
 
 // IronCoreCSIDriver is the CSI driver for ironcore provisioner
 const (
-	IroncoreCSIDriver = "ironcore-csi-driver"
+	IroncoreCSIDriver = "csi.ironcore.dev"
 )
 
 func (d *ironcoreDriver) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
