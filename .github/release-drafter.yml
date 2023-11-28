@@ -34,7 +34,7 @@ exclude-labels:
 autolabeler:
   - label: 'provider'
     files:
-      - '/pkg/onmetal/*'
+      - '/pkg/ironcore/*'
   - label: 'documentation'
     files:
       - '*.md'

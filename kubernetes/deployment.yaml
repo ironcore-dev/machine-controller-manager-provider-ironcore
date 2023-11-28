@@ -42,7 +42,7 @@ spec:
           resources: {}
         - command:
             - ./machine-controller
-            - --onmetal-kubeconfig=/etc/onmetal/kubeconfig # Mandatory Parameter - Filepath to the onmetal kubeconfig
+            - --ironcore-kubeconfig=/etc/ironcore/kubeconfig # Mandatory Parameter - Filepath to the ironcore kubeconfig
             - --control-kubeconfig=inClusterConfig # $(TARGET_KUBECONFIG) Mandatory Parameter - Filepath to the target cluster's kubeconfig where node objects are expected to join.
             - --target-kubeconfig=/var/lib/machine-controller-manager/kubeconfig # $(CONTROL_KUBECONFIG) Optional Parameter - Default value is same as target-kubeconfig - Filepath to the control cluster's kubeconfig where machine objects would be created. Optionally you could also use "inClusterConfig" when pod is running inside control kubeconfig.
             # - --namespace=$(CONTROL_NAMESPACE) # Optional Parameter - Default value for namespace is 'default' - The control namespace where the controller watches for it's machine objects.
@@ -52,7 +52,7 @@ spec:
             - --machine-safety-orphan-vms-period=30m # Optional Parameter - Default value 30mins - Time period (in time) used to poll for orphan VMs by safety controller.
             - --node-conditions=ReadonlyFilesystem,KernelDeadlock,DiskPressure # List of comma-separated/case-sensitive node-conditions which when set to True will change machine to a failed state after MachineHealthTimeout duration. It may further be replaced with a new machine if the machine is backed by a machine-set object.
             - --v=3
-          image: ghcr.io/onmetal/machine-controller-manager-provider-onmetal:latest
+          image: ghcr.io/ironcore-dev/machine-controller-manager-provider-ironcore:latest
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -80,7 +80,7 @@ spec:
             - mountPath: /var/lib/machine-controller-manager
               name: machine-controller-manager
               readOnly: true
-            - mountPath: /etc/onmetal
+            - mountPath: /etc/ironcore
               name: cloudprovider
               readOnly: true
           terminationMessagePath: /dev/termination-log

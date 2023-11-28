@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"encoding/json"
@@ -23,13 +23,13 @@ import (
 	gardenercorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	gardenermachinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	"github.com/onmetal/controller-utils/buildutils"
-	"github.com/onmetal/controller-utils/modutils"
-	"github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
-	corev1alpha1 "github.com/onmetal/onmetal-api/api/core/v1alpha1"
-	envtestutils "github.com/onmetal/onmetal-api/utils/envtest"
-	"github.com/onmetal/onmetal-api/utils/envtest/apiserver"
+	"github.com/ironcore-dev/controller-utils/buildutils"
+	"github.com/ironcore-dev/controller-utils/modutils"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
+	envtestutils "github.com/ironcore-dev/ironcore/utils/envtest"
+	"github.com/ironcore-dev/ironcore/utils/envtest/apiserver"
+	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap/zapcore"
@@ -88,7 +88,7 @@ var _ = BeforeSuite(func() {
 
 	testEnvExt = &envtestutils.EnvironmentExtensions{
 		APIServiceDirectoryPaths: []string{
-			modutils.Dir("github.com/onmetal/onmetal-api", "config", "apiserver", "apiservice", "bases"),
+			modutils.Dir("github.com/ironcore-dev/ironcore", "config", "apiserver", "apiservice", "bases"),
 		},
 		ErrorIfAPIServicePathIsMissing: true,
 	}
@@ -110,7 +110,7 @@ var _ = BeforeSuite(func() {
 	komega.SetClient(k8sClient)
 
 	apiSrv, err := apiserver.New(cfg, apiserver.Options{
-		MainPath:     "github.com/onmetal/onmetal-api/cmd/onmetal-apiserver",
+		MainPath:     "github.com/ironcore-dev/ironcore/cmd/ironcore-apiserver",
 		BuildOptions: []buildutils.BuildOption{buildutils.ModModeMod},
 		ETCDServers:  []string{testEnv.ControlPlane.Etcd.URL.String()},
 		Host:         testEnvExt.APIServiceInstallOptions.LocalServingHost,
@@ -119,7 +119,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	By("starting the onmetal-api aggregated api server")
+	By("starting the ironcore-api aggregated api server")
 	Expect(apiSrv.Start()).To(Succeed())
 	DeferCleanup(apiSrv.Stop)
 
@@ -155,7 +155,7 @@ func SetupTest() (*corev1.Namespace, *corev1.Secret, *driver.Driver) {
 		Expect(k8sClient.Create(ctx, machineClass)).To(Succeed())
 		DeferCleanup(k8sClient.Delete, machineClass)
 
-		// create kubeconfig which we will use as the provider secret to create our onmetal machine
+		// create kubeconfig which we will use as the provider secret to create our ironcore machine
 		user, err := testEnv.AddUser(envtest.User{
 			Name:   "dummy",
 			Groups: []string{"system:authenticated", "system:masters"},

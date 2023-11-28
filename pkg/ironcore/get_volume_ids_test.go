@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package onmetal
+package ironcore
 
 import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
@@ -25,8 +25,8 @@ var _ = Describe("GetVolumeIDs", func() {
 
 	It("should get volume IDs", func(ctx SpecContext) {
 		By("giving correct driver name")
-		csiDriverName := OnmetalCSIDriver
-		volumeIDs := []string{"vol-onmetal-csi"}
+		csiDriverName := IroncoreCSIDriver
+		volumeIDs := []string{"vol-ironcore-csi"}
 		ret, err := (*drv).GetVolumeIDs(ctx, &driver.GetVolumeIDsRequest{
 			PVSpecs: []*corev1.PersistentVolumeSpec{
 				{

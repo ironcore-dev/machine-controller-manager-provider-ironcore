@@ -24,7 +24,7 @@ const (
 	// V1Alpha1 is the API version
 	V1Alpha1 = "mcm.gardener.cloud/v1alpha1"
 	// ProviderName is the provider name
-	ProviderName = "onmetal"
+	ProviderName = "ironcore"
 )
 
 // ProviderSpec is the spec to be used while parsing the calls

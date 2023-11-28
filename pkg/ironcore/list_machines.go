@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"context"
@@ -21,13 +21,13 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (*driver.ListMachinesResponse, error) {
+func (d *ironcoreDriver) ListMachines(ctx context.Context, req *driver.ListMachinesRequest) (*driver.ListMachinesResponse, error) {
 	if req.MachineClass.Provider != apiv1alpha1.ProviderName {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("requested provider '%s' is not suppored by the driver '%s'", req.MachineClass.Provider, apiv1alpha1.ProviderName))
 	}
@@ -40,20 +40,20 @@ func (d *onmetalDriver) ListMachines(ctx context.Context, req *driver.ListMachin
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("provider spec for requested provider '%s' is invalid: %v", req.MachineClass.Provider, err))
 	}
 
-	// Get onmetal machine list
-	onmetalMachineList := &computev1alpha1.MachineList{}
+	// Get ironcore machine list
+	ironcoreMachineList := &computev1alpha1.MachineList{}
 	matchingLabels := client.MatchingLabels{}
 	for k, v := range providerSpec.Labels {
 		matchingLabels[k] = v
 	}
-	if err := d.OnmetelClient.List(ctx, onmetalMachineList, client.InNamespace(d.OnmetalNamespace), matchingLabels); err != nil {
+	if err := d.IroncoreClient.List(ctx, ironcoreMachineList, client.InNamespace(d.IroncoreNamespace), matchingLabels); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	//Creating machineList from onmetalMachineList items
-	machineList := make(map[string]string, len(onmetalMachineList.Items))
-	for _, machine := range onmetalMachineList.Items {
-		machineID := getProviderIDForOnmetalMachine(&machine)
+	//Creating machineList from ironcoreMachineList items
+	machineList := make(map[string]string, len(ironcoreMachineList.Items))
+	for _, machine := range ironcoreMachineList.Items {
+		machineID := getProviderIDForIroncoreMachine(&machine)
 		machineList[machineID] = machine.Name
 	}
 

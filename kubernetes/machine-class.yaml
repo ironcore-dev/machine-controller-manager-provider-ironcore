@@ -3,7 +3,7 @@ kind: MachineClass
 metadata:
   name: test-mc
   namespace: default # Namespace where the controller would watch
-provider: onmetal
+provider: ironcore
 providerSpec:
   # provider spec goes here ...
 secretRef: # Secret pointing to a secret which contains the provider secret and cloudconfig

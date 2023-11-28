@@ -73,7 +73,7 @@ var (
 				},
 				map[string]interface{}{
 					"overwrite": true,
-					"path":      "/var/lib/onmetal-cloud-config/init.sh",
+					"path":      "/var/lib/ironcore-cloud-config/init.sh",
 					"contents": map[string]interface{}{
 						"source":      "data:,abcd%0A",
 						"compression": "",
@@ -96,12 +96,12 @@ var (
 					"contents": `[Unit]
 Wants=network-online.target
 After=network-online.target
-ConditionPathExists=!/var/lib/onmetal-cloud-config/init.done
+ConditionPathExists=!/var/lib/ironcore-cloud-config/init.done
 
 [Service]
 Type=oneshot
-ExecStart=/var/lib/onmetal-cloud-config/init.sh
-ExecStopPost=touch /var/lib/onmetal-cloud-config/init.done
+ExecStart=/var/lib/ironcore-cloud-config/init.sh
+ExecStopPost=touch /var/lib/ironcore-cloud-config/init.done
 Restart=on-failure
 RestartSec=5
 

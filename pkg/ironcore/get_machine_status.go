@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package onmetal
+package ironcore
 
 import (
 	"context"
@@ -21,15 +21,15 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	apiv1alpha1 "github.com/onmetal/machine-controller-manager-provider-onmetal/pkg/api/v1alpha1"
-	computev1alpha1 "github.com/onmetal/onmetal-api/api/compute/v1alpha1"
+	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
+	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // GetMachineStatus handles a machine get status request
-func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
+func (d *ironcoreDriver) GetMachineStatus(ctx context.Context, req *driver.GetMachineStatusRequest) (*driver.GetMachineStatusResponse, error) {
 	if isEmptyMachineStatusRequest(req) {
 		return nil, status.Error(codes.InvalidArgument, "received empty request")
 	}
@@ -41,12 +41,12 @@ func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMac
 	defer klog.V(3).Infof("Machine status request has been processed for %q", req.Machine.Name)
 
 	// Fetch machine key from machine request
-	onmetalMachineKey := client.ObjectKey{
-		Namespace: d.OnmetalNamespace,
+	ironcoreMachineKey := client.ObjectKey{
+		Namespace: d.IroncoreNamespace,
 		Name:      req.Machine.Name,
 	}
-	onmetalMachine := &computev1alpha1.Machine{}
-	if err := d.OnmetelClient.Get(ctx, onmetalMachineKey, onmetalMachine); err != nil {
+	ironcoreMachine := &computev1alpha1.Machine{}
+	if err := d.IroncoreClient.Get(ctx, ironcoreMachineKey, ironcoreMachine); err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -54,8 +54,8 @@ func (d *onmetalDriver) GetMachineStatus(ctx context.Context, req *driver.GetMac
 	}
 
 	return &driver.GetMachineStatusResponse{
-		ProviderID: getProviderIDForOnmetalMachine(onmetalMachine),
-		NodeName:   onmetalMachine.Name,
+		ProviderID: getProviderIDForIroncoreMachine(ironcoreMachine),
+		NodeName:   ironcoreMachine.Name,
 	}, nil
 }
 

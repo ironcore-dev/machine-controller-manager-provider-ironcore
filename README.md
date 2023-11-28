@@ -1,17 +1,17 @@
-# machine-controller-manager-provider-onmetal
+# machine-controller-manager-provider-ironcore
 
 [![reuse compliant](https://reuse.software/badge/reuse-compliant.svg)](https://reuse.software/)
 
-Out of tree (controller based) implementation for `onmetal` as a new provider.
+Out of tree (controller based) implementation for `ironcore` as a new provider.
 
 ## About
-- The `onmetal` Out Of Tree provider implements the interface defined at [MCM OOT driver](https://github.com/gardener/machine-controller-manager/blob/master/pkg/util/provider/driver/driver.go).
+- The `ironcore` Out Of Tree provider implements the interface defined at [MCM OOT driver](https://github.com/gardener/machine-controller-manager/blob/master/pkg/util/provider/driver/driver.go).
 
 ## Fundamental Design Principles:
 
 Following are the basic principles kept in mind while developing the external plugin.
 * Communication between this Machine Controller (MC) and Machine Controller Manager (MCM) is achieved using the Kubernetes native declarative approach.
-* Machine Controller (MC) behaves as the controller used to interact with the cloud provider `onmetal` and manage the resources corresponding to the machine objects.
+* Machine Controller (MC) behaves as the controller used to interact with the cloud provider `ironcore` and manage the resources corresponding to the machine objects.
 * Machine Controller Manager (MCM) deals with higher level objects such as machine-set and machine-deployment objects.
 
 ## Support for a new provider
@@ -22,7 +22,7 @@ Following are the basic principles kept in mind while developing the external pl
 
 1. Open terminal pointing to `$GOPATH/src/github.com/gardener`. Clone this repository.
 
-2. Navigate to `$GOPATH/src/github.com/onmetal/machine-controller-manager-provider-onmetal`.
+2. Navigate to `$GOPATH/src/github.com/ironcore-dev/machine-controller-manager-provider-ironcore`.
     - In the `MAKEFILE` make sure `$TARGET_KUBECONFIG` points to the cluster where you wish to manage machines. `$CONTROL_NAMESPACE` represents the namespaces where MCM is looking for machine CR objects, and `$CONTROL_KUBECONFIG` points to the cluster which holds these machine CRs.
     - Run the machine controller (driver) using the command below.
         ```bash
@@ -45,7 +45,7 @@ Following are the basic principles kept in mind while developing the external pl
         ```bash
         make start
         ```
-4. On the third terminal pointing to `$GOPATH/src/github.com/gardener/machine-controller-manager-provider-onmetal`
+4. On the third terminal pointing to `$GOPATH/src/github.com/gardener/machine-controller-manager-provider-ironcore`
     - Fill in the object files given below and deploy them as described below.
     - Deploy the `machine-class`
         ```bash
