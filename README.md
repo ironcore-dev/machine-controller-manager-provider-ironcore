@@ -18,7 +18,7 @@ Following are the basic principles kept in mind while developing the external pl
 
 - Steps to be followed while implementing/testing a new provider are mentioned [here](https://github.com/gardener/machine-controller-manager/blob/master/docs/development/cp_support_new.md)
 
-## Testing the Gardener on Metal OOT
+## Testing the IronCore OOT
 
 1. Open terminal pointing to `$GOPATH/src/github.com/gardener`. Clone this repository.
 
