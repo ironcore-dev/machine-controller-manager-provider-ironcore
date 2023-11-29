@@ -48,6 +48,7 @@ func main() {
 	options := logs.NewOptions()
 	logs.AddFlags(pflag.CommandLine)
 	AddExtraFlags(pflag.CommandLine)
+	ironcore.AddCsiDriverFlag(pflag.CommandLine)
 
 	flag.InitFlags()
 	logs.InitLogs()

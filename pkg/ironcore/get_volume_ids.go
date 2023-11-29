@@ -18,12 +18,13 @@ import (
 	"context"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 )
 
 // IronCoreCSIDriver is the CSI driver for ironcore provisioner
-const (
-	IroncoreCSIDriver = "csi.ironcore.dev"
+var (
+	IroncoreCSIDriver string
 )
 
 func (d *ironcoreDriver) GetVolumeIDs(_ context.Context, req *driver.GetVolumeIDsRequest) (*driver.GetVolumeIDsResponse, error) {
@@ -45,4 +46,8 @@ func (d *ironcoreDriver) GetVolumeIDs(_ context.Context, req *driver.GetVolumeID
 		VolumeIDs: volumeIDs,
 	}
 	return response, nil
+}
+
+func AddCsiDriverFlag(fs *pflag.FlagSet) {
+	fs.StringVar(&IroncoreCSIDriver, "csi.ironcore.dev", "", "CSI driver for ironcore provisioner.")
 }
