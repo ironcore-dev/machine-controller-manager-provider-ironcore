@@ -39,13 +39,15 @@ type ironcoreDriver struct {
 	Schema            *runtime.Scheme
 	IroncoreClient    client.Client
 	IroncoreNamespace string
+	IroncoreCSIDriver string
 }
 
 // NewDriver returns a new Gardener ironcore driver object
-func NewDriver(c client.Client, namespace string) driver.Driver {
+func NewDriver(c client.Client, namespace, csiDriver string) driver.Driver {
 	return &ironcoreDriver{
 		IroncoreClient:    c,
 		IroncoreNamespace: namespace,
+		IroncoreCSIDriver: csiDriver,
 	}
 }
 

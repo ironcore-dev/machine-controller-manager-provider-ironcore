@@ -25,7 +25,7 @@ var _ = Describe("GetVolumeIDs", func() {
 
 	It("should get volume IDs", func(ctx SpecContext) {
 		By("giving correct driver name")
-		csiDriverName := IroncoreCSIDriver
+		csiDriverName := "csi.ironcore.dev"
 		volumeIDs := []string{"vol-ironcore-csi"}
 		ret, err := (*drv).GetVolumeIDs(ctx, &driver.GetVolumeIDsRequest{
 			PVSpecs: []*corev1.PersistentVolumeSpec{
