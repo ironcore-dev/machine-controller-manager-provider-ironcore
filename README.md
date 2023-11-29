@@ -1,6 +1,9 @@
 # machine-controller-manager-provider-ironcore
 
-[![reuse compliant](https://reuse.software/badge/reuse-compliant.svg)](https://reuse.software/)
+[![REUSE status](https://api.reuse.software/badge/github.com/ironcore-dev/machine-controller-manager-provider-ironcore)](https://api.reuse.software/info/github.com/ironcore-dev/machine-controller-manager-provider-ironcore)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ironcore-dev/machine-controller-manager-provider-ironcore)](https://goreportcard.com/report/github.com/ironcore-dev/machine-controller-manager-provider-ironcore)
+[![GitHub License](https://img.shields.io/static/v1?label=License&message=Apache-2.0&color=blue)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 
 Out of tree (controller based) implementation for `ironcore` as a new provider.
 
