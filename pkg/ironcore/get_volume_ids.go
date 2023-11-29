@@ -27,7 +27,7 @@ func (d *ironcoreDriver) GetVolumeIDs(_ context.Context, req *driver.GetVolumeID
 
 	var volumeIDs []string
 	for _, pvSpec := range req.PVSpecs {
-		if pvSpec.CSI != nil && pvSpec.CSI.Driver == d.IroncoreCSIDriver && pvSpec.CSI.VolumeHandle != "" {
+		if pvSpec.CSI != nil && pvSpec.CSI.Driver == d.CSIDriverName && pvSpec.CSI.VolumeHandle != "" {
 			volumeID := pvSpec.CSI.VolumeHandle
 			volumeIDs = append(volumeIDs, volumeID)
 		}

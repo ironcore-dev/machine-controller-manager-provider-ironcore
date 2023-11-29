@@ -39,7 +39,7 @@ import (
 
 var (
 	IroncoreKubeconfigPath string
-	CSIDriver              string
+	CSIDriverName          string
 )
 
 func main() {
@@ -65,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	drv := ironcore.NewDriver(ironcoreClient, namespace, CSIDriver)
+	drv := ironcore.NewDriver(ironcoreClient, namespace, CSIDriverName)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -115,5 +115,5 @@ func getIroncoreClientAndNamespace() (client.Client, string, error) {
 
 func AddExtraFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&IroncoreKubeconfigPath, "ironcore-kubeconfig", "", "Path to the ironcore kubeconfig.")
-	fs.StringVar(&CSIDriver, "csi.ironcore.dev", "", "CSI driver for ironcore provisioner.")
+	fs.StringVar(&CSIDriverName, "csi-driver-name", ironcore.DefaultCSIDriverName, "CSI driver name used to determine the volumes for a Node.")
 }
