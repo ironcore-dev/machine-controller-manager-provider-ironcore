@@ -18,6 +18,7 @@ const (
 	defaultIgnitionKey     = "ignition.json"
 	ShootNameLabelKey      = "shoot-name"
 	ShootNamespaceLabelKey = "shoot-namespace"
+	DefaultCSIDriverName   = "csi.ironcore.dev"
 )
 
 var (
@@ -28,13 +29,15 @@ type ironcoreDriver struct {
 	Schema            *runtime.Scheme
 	IroncoreClient    client.Client
 	IroncoreNamespace string
+	CSIDriverName     string
 }
 
 // NewDriver returns a new Gardener ironcore driver object
-func NewDriver(c client.Client, namespace string) driver.Driver {
+func NewDriver(c client.Client, namespace, csiDriverName string) driver.Driver {
 	return &ironcoreDriver{
 		IroncoreClient:    c,
 		IroncoreNamespace: namespace,
+		CSIDriverName:     csiDriverName,
 	}
 }
 
