@@ -89,6 +89,10 @@ docs: gen-crd-api-reference-docs ## Run go generate to generate API reference do
 .PHONY: generate
 generate: docs ## Generate project artefacts.
 
+.PHONY: clean-local-bin
+clean-local-bin:
+	rm -rf $(LOCALBIN)/*
+
 ##@ Deployment
 
 ifndef ignore-not-found
