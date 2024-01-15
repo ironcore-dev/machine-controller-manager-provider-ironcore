@@ -22,7 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	. "sigs.k8s.io/controller-runtime/pkg/envtest/komega"
 )
 
@@ -95,7 +95,7 @@ var _ = Describe("CreateMachine", func() {
 			})),
 			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
 				Name:   "primary",
-				Device: pointer.String("oda"),
+				Device: ptr.To("oda"),
 				VolumeSource: computev1alpha1.VolumeSource{
 					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
 						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
