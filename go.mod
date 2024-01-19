@@ -11,7 +11,7 @@ require (
 	github.com/ironcore-dev/controller-utils v0.9.1
 	github.com/ironcore-dev/ironcore v0.1.2-0.20240115125135-bd9fe9b4a160
 	github.com/onsi/ginkgo/v2 v2.15.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/gomega v1.31.0
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.26.0
 	k8s.io/api v0.29.1
