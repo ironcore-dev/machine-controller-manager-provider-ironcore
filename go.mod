@@ -14,8 +14,8 @@ require (
 	github.com/onsi/gomega v1.31.1
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.26.0
-	k8s.io/api v0.29.1
-	k8s.io/apimachinery v0.29.1
+	k8s.io/api v0.29.2
+	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.1
 	k8s.io/component-base v0.29.1
 	k8s.io/klog v1.0.0
