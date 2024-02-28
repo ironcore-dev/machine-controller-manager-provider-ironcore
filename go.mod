@@ -1,11 +1,10 @@
 module github.com/ironcore-dev/machine-controller-manager-provider-ironcore
 
 go 1.22
-
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.20.0
-	github.com/gardener/gardener v1.88.0
+	github.com/gardener/gardener v1.89.0
 	github.com/gardener/machine-controller-manager v0.52.0
 	github.com/imdario/mergo v0.3.16
 	github.com/ironcore-dev/controller-utils v0.9.2
