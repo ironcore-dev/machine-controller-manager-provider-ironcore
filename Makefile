@@ -115,11 +115,11 @@ GOIMPORTS ?= $(LOCALBIN)/goimports
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v3.8.7
+KUSTOMIZE_VERSION ?= v5.0.0
 ADDLICENSE_VERSION ?= v1.1.1
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= v0.3.0
-GOIMPORTS_VERSION ?= v0.13.0
-GOLANGCI_LINT_VERSION ?= v1.55.2
+GOIMPORTS_VERSION ?= v0.18.0
+GOLANGCI_LINT_VERSION ?= v1.56.2
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
