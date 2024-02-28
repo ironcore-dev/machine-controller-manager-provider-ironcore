@@ -43,8 +43,8 @@ github.com/evanphx/json-patch/v5 v5.8.0 h1:lRj6N9Nci7MvzrXuX6HFzU8XjmhPiXPlsKEy1
 github.com/evanphx/json-patch/v5 v5.8.0/go.mod h1:VNkHZ/282BpEyt/tObQO8s5CMPmYYq14uClGH4abBuQ=
 github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
-github.com/gardener/gardener v1.88.0 h1:rswlezvHGqAcReLZRovPJdSEPWEOc67lHMWQqZQGICc=
-github.com/gardener/gardener v1.88.0/go.mod h1:HaefCVQWgYinwiZi4z8vEGu534/ql+bW9EEKy1bEsHY=
+github.com/gardener/gardener v1.89.0 h1:iqXptBVU0BeW0qhnvEywZtZdhD2yR3PcUlFsgdZH/1c=
+github.com/gardener/gardener v1.89.0/go.mod h1:9XpmG8MvZ2p36J7200qaGcqaFQ9vaP2ogZVkU6VgNGI=
 github.com/gardener/machine-controller-manager v0.52.0 h1:irhpamQ/QXixCXJpNKRL71aM3FAdNO1HxZwA54jvncI=
 github.com/gardener/machine-controller-manager v0.52.0/go.mod h1:6g5i/uRGugkRyIABZmDjvaiT8GLL7XRE9ziw4C/9nCo=
 github.com/go-logr/logr v0.1.0/go.mod h1:ixOQHD9gLJUVQQ2ZOR7zLEifBX6tGkNJF4QyIY7sIas=
