@@ -1,6 +1,7 @@
 module github.com/ironcore-dev/machine-controller-manager-provider-ironcore
 
-go 1.22
+go 1.22.0
+
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.20.0
