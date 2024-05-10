@@ -14,9 +14,9 @@ require (
 	github.com/onsi/gomega v1.33.0
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/client-go v0.29.3
+	k8s.io/api v0.30.0
+	k8s.io/apimachinery v0.30.0
+	k8s.io/client-go v0.30.0
 	k8s.io/component-base v0.29.3
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.120.1
@@ -98,7 +98,7 @@ require (
 	k8s.io/apiserver v0.29.2 // indirect
 	k8s.io/cluster-bootstrap v0.29.2 // indirect
 	k8s.io/kube-aggregator v0.29.2 // indirect
-	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
