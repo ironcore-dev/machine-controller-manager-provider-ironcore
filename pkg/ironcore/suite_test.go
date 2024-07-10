@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	gardenercorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	gardenermachinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/ironcore-dev/controller-utils/buildutils"
@@ -88,7 +87,6 @@ var _ = BeforeSuite(func() {
 
 	DeferCleanup(envtestutils.StopWithExtensions, testEnv, testEnvExt)
 	Expect(computev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
-	Expect(gardenercorev1beta1.AddToScheme(scheme.Scheme)).To(Succeed())
 	Expect(gardenermachinev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	// Init package-level k8sClient
