@@ -8,6 +8,8 @@ import (
 	"fmt"
 
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
+	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,6 +32,10 @@ type ironcoreDriver struct {
 	IroncoreClient    client.Client
 	IroncoreNamespace string
 	CSIDriverName     string
+}
+
+func (d *ironcoreDriver) InitializeMachine(ctx context.Context, request *driver.InitializeMachineRequest) (*driver.InitializeMachineResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "IronCore Provider does not yet implement InitializeMachine")
 }
 
 // NewDriver returns a new Gardener ironcore driver object

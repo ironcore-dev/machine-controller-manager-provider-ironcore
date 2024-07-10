@@ -1,12 +1,12 @@
 module github.com/ironcore-dev/machine-controller-manager-provider-ironcore
 
-go 1.22.3
+go 1.22.5
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.21.0
 	github.com/gardener/gardener v1.90.3
-	github.com/gardener/machine-controller-manager v0.52.0
+	github.com/gardener/machine-controller-manager v0.53.0
 	github.com/imdario/mergo v0.3.16
 	github.com/ironcore-dev/controller-utils v0.9.3
 	github.com/ironcore-dev/ironcore v0.1.2
@@ -94,9 +94,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.29.2 // indirect
+	k8s.io/apiextensions-apiserver v0.29.3 // indirect
 	k8s.io/apiserver v0.29.4 // indirect
-	k8s.io/cluster-bootstrap v0.29.2 // indirect
+	k8s.io/cluster-bootstrap v0.29.3 // indirect
 	k8s.io/kube-aggregator v0.29.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
