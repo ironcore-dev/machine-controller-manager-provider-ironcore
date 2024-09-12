@@ -36,7 +36,7 @@ func (d *ironcoreDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMa
 
 	ignitionSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      getIgnitionNameForMachine(req.Machine.Name),
+			Name:      d.getIgnitionNameForMachine(ctx, req.Machine.Name),
 			Namespace: d.IroncoreNamespace,
 		},
 	}

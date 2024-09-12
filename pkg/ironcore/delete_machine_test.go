@@ -42,7 +42,7 @@ var _ = Describe("DeleteMachine", func() {
 		ignition := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: ns.Name,
-				Name:      "machine-0-ignition",
+				Name:      machine.Name,
 			},
 		}
 
@@ -58,7 +58,50 @@ var _ = Describe("DeleteMachine", func() {
 		By("waiting for the machine to be gone")
 		Eventually(Get(machine)).Should(Satisfy(apierrors.IsNotFound))
 
+		By("waiting for the ignition secret to be gone")
+		Eventually(Get(ignition)).Should(Satisfy(apierrors.IsNotFound))
+	})
+
+	It("should create and delete a machine igntition secret created with old naming convention", func(ctx SpecContext) {
+		By("creating ignition secret")
+		ignition := &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      "machine-0-ignition",
+			},
+		}
+		Expect(k8sClient.Create(ctx, ignition)).To(Succeed())
+
+		By("creating an ironcore machine")
+		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
+			Secret:       providerSecret,
+		})).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
+			NodeName:   "machine-0",
+		}))
+
+		machine := &computev1alpha1.Machine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      "machine-0",
+			},
+		}
+
+		By("ensuring that the machine can be deleted")
+		response, err := (*drv).DeleteMachine(ctx, &driver.DeleteMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(response).To(Equal(&driver.DeleteMachineResponse{}))
+
 		By("waiting for the machine to be gone")
+		Eventually(Get(machine)).Should(Satisfy(apierrors.IsNotFound))
+
+		By("waiting for the ignition secret to be gone")
 		Eventually(Get(ignition)).Should(Satisfy(apierrors.IsNotFound))
 	})
 })

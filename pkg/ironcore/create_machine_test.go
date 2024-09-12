@@ -113,7 +113,7 @@ var _ = Describe("CreateMachine", func() {
 				},
 			})),
 			HaveField("Spec.IgnitionRef", &commonv1alpha1.SecretKeySelector{
-				Name: fmt.Sprintf("%s-ignition", machineName),
+				Name: machineName,
 				Key:  defaultIgnitionKey,
 			}),
 		))
@@ -122,7 +122,7 @@ var _ = Describe("CreateMachine", func() {
 		ignition := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: ns.Name,
-				Name:      fmt.Sprintf("%s-ignition", machineName),
+				Name:      machineName,
 			},
 		}
 
