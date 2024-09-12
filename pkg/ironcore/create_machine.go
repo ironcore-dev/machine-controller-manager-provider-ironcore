@@ -92,7 +92,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 			Kind:       "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      getIgnitionNameForMachine(req.Machine.Name),
+			Name:      d.getIgnitionNameForMachine(ctx, req.Machine.Name),
 			Namespace: d.IroncoreNamespace,
 		},
 		Data: ignitionData,
