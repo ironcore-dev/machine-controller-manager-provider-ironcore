@@ -6,6 +6,8 @@ package ironcore
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -24,7 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	apiruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -72,6 +74,14 @@ var _ = BeforeSuite(func() {
 			modutils.Dir("github.com/gardener/machine-controller-manager", "kubernetes", "crds", "machine.sapcloud.io_machinesets.yaml"),
 		},
 		ErrorIfCRDPathMissing: true,
+
+		// The BinaryAssetsDirectory is only required if you want to run the tests directly
+		// without call the makefile target test. If not informed it will look for the
+		// default path defined in controller-apiruntime which is /usr/local/kubebuilder/.
+		// Note that you must have the required binaries setup under the bin directory to perform
+		// the tests directly. When we run make test it will be setup and used automatically.
+		BinaryAssetsDirectory: filepath.Join("..", "..", "bin", "k8s",
+			fmt.Sprintf("1.29.0-%s-%s", runtime.GOOS, runtime.GOARCH)),
 	}
 
 	testEnvExt = &envtestutils.EnvironmentExtensions{
@@ -213,7 +223,7 @@ func newMachineClass(providerName string, providerSpec map[string]interface{}) *
 	providerSpecJSON, err := json.Marshal(providerSpec)
 	Expect(err).ShouldNot(HaveOccurred())
 	return &gardenermachinev1alpha1.MachineClass{
-		ProviderSpec: runtime.RawExtension{
+		ProviderSpec: apiruntime.RawExtension{
 			Raw: providerSpecJSON,
 		},
 		Provider: providerName,
