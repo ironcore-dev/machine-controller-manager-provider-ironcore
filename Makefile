@@ -2,7 +2,7 @@
 CONTROLLER_IMG ?= controller:latest
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.0
+ENVTEST_K8S_VERSION = 1.29.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -118,8 +118,8 @@ GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 KUSTOMIZE_VERSION ?= v5.0.0
 ADDLICENSE_VERSION ?= v1.1.1
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= v0.3.0
-GOIMPORTS_VERSION ?= v0.22.0
-GOLANGCI_LINT_VERSION ?= v1.59.1
+GOIMPORTS_VERSION ?= v0.25.0
+GOLANGCI_LINT_VERSION ?= v1.61.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
