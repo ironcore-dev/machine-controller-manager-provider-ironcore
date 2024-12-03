@@ -11,6 +11,10 @@ import (
 	"testing"
 	"time"
 
+	commonv1alpha1 "github.com/ironcore-dev/ironcore/api/common/v1alpha1"
+
+	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
+
 	gardenermachinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/ironcore-dev/controller-utils/buildutils"
@@ -97,6 +101,7 @@ var _ = BeforeSuite(func() {
 
 	DeferCleanup(envtestutils.StopWithExtensions, testEnv, testEnvExt)
 	Expect(computev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(ipamv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 	Expect(gardenermachinev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	// Init package-level k8sClient
@@ -175,6 +180,18 @@ func SetupTest() (*corev1.Namespace, *corev1.Secret, *driver.Driver) {
 			Data: secretData,
 		}
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
+
+		prefix := &ipamv1alpha1.Prefix{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-prefix",
+				Namespace: ns.Name,
+			},
+			Spec: ipamv1alpha1.PrefixSpec{
+				IPFamily: corev1.IPv4Protocol,
+				Prefix:   commonv1alpha1.MustParseNewIPPrefix("192.168.0.0/24"),
+			},
+		}
+		Expect(k8sClient.Create(ctx, prefix)).To(Succeed())
 
 		drv = NewDriver(userClient, ns.Name, DefaultCSIDriverName)
 	})

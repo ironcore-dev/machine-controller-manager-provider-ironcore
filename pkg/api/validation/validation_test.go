@@ -79,7 +79,7 @@ var _ = Describe("Machine", func() {
 			},
 			&corev1.Secret{},
 			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.prefixName"), "prefixName is required")),
+			ContainElement(field.Required(fldPath.Child("spec.prefixNames"), "prefixNames is required")),
 		),
 		Entry("invalid dns server ip",
 			&v1alpha1.ProviderSpec{
