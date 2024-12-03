@@ -52,7 +52,7 @@ func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *fiel
 		allErrs = append(allErrs, field.Required(fldPath.Child("networkName"), "networkName is required"))
 	}
 
-	if spec.PrefixName == "" {
+	if len(spec.PrefixNames) == 0 {
 		allErrs = append(allErrs, field.Required(fldPath.Child("prefixName"), "prefixName is required"))
 	}
 
