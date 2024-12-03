@@ -53,7 +53,7 @@ func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *fiel
 	}
 
 	if len(spec.PrefixNames) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("prefixName"), "prefixName is required"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("prefixNames"), "prefixNames is required"))
 	}
 
 	for i, ip := range spec.DnsServers {
