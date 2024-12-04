@@ -100,11 +100,11 @@ string
 </tr>
 <tr>
 <td>
-<code>prefixName</code>
+<code>prefixNames</code>
 </td>
 <td>
 <em>
-string
+[]string
 </em>
 </td>
 <td>
