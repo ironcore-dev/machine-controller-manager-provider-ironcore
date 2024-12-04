@@ -147,12 +147,23 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 		if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: prefixName, Namespace: d.IroncoreNamespace}, prefix); err != nil {
 			return nil, status.Error(codes.Internal, fmt.Sprintf("error getting prefix %s:%s", prefixName, err.Error()))
 		}
-		var machinePrefixLength int32 = 32
+		var (
+			machinePrefixLength int32 = 32
+			nodePrefixIPv6      networkingv1alpha1.PrefixSource
+		)
 		if prefix.Spec.IPFamily == corev1.IPv6Protocol {
-			// TODO: validate prefix length in ironcore provider extension:
-			// machine prefix length must be longer than the prefix length
-			// constify and export
-			machinePrefixLength = 112
+			machinePrefixLength = 128
+			nodePrefixIPv6 = networkingv1alpha1.PrefixSource{
+				Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
+					PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
+						Spec: ipamv1alpha1.PrefixSpec{
+							IPFamily:     corev1.IPv6Protocol,
+							PrefixLength: 112,
+							ParentRef:    &corev1.LocalObjectReference{Name: prefixName},
+						},
+					},
+				},
+			}
 		}
 		ip := networkingv1alpha1.IPSource{
 			Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
@@ -170,6 +181,8 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 			append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPs, ip)
 		ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPFamilies =
 			append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPFamilies, prefix.Spec.IPFamily)
+		ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.Prefixes =
+			append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.Prefixes, nodePrefixIPv6)
 	}
 
 	if providerSpec.RootDisk == nil {
