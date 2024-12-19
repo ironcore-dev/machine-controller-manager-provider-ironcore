@@ -33,7 +33,7 @@ type ProviderSpec struct {
 	// NetworkName is the Network to be used for the Machine's NetworkInterface.
 	NetworkName string `json:"networkName"`
 	// PrefixName is the parent Prefix from which an IP should be allocated for the Machine's NetworkInterface.
-	PrefixName string `json:"prefixName"`
+	PrefixNames []string `json:"prefixNames"`
 	// Labels are used to tag resources which the MCM creates, so they can be identified later.
 	Labels map[string]string `json:"labels,omitempty"`
 	// DnsServers is a list of DNS resolvers which should be configured on the host.
