@@ -16,11 +16,12 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+    types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
   buildAndPush:
-    if: ${{ github.event.label.name == 'ok-to-image' }} || ${{ github.event.label.name == 'ok-to-🐳' }} || ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'ok-to-image')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
