@@ -210,11 +210,11 @@ func newMachine(namespace *corev1.Namespace, prefix string, setMachineIndex int,
 		}
 	}
 
-	machine.Spec.NodeTemplateSpec.ObjectMeta.Annotations = make(map[string]string)
+	machine.Spec.NodeTemplateSpec.Annotations = make(map[string]string)
 
 	//appending to already existing annotations
 	for k, v := range annotations {
-		machine.Spec.NodeTemplateSpec.ObjectMeta.Annotations[k] = v
+		machine.Spec.NodeTemplateSpec.Annotations[k] = v
 	}
 	return machine
 }
