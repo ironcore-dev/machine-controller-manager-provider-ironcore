@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.24.0
-	github.com/gardener/machine-controller-manager v0.58.0
+	github.com/gardener/machine-controller-manager v0.59.1
 	github.com/imdario/mergo v0.3.16
 	github.com/ironcore-dev/controller-utils v0.9.9
 	github.com/ironcore-dev/ironcore v0.2.3
