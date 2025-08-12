@@ -24,7 +24,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'ok-to-image')
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: docker/metadata-action@v5
         id: meta
