@@ -20,6 +20,9 @@ on:
 
 jobs:
   buildAndPush:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'ok-to-image')
     steps:
