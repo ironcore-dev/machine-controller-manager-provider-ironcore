@@ -8,6 +8,12 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+# CONTAINER_TOOL defines the container tool to be used for building images.
+# Be aware that the target commands are only tested with Docker which is
+# scaffolded by default. However, you might want to replace it to use other
+# tools. (i.e. podman)
+CONTAINER_TOOL ?= docker
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
@@ -73,11 +79,11 @@ run: fmt vet ## Run a machine controller from your host.
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the machine controller.
-	docker build -t ${CONTROLLER_IMG} .
+	$(CONTAINER_TOOL) build -t ${CONTROLLER_IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the machine controller.
-	docker push ${CONTROLLER_IMG}
+	$(CONTAINER_TOOL) push ${CONTROLLER_IMG}
 
 .PHONY: docs
 docs: gen-crd-api-reference-docs ## Run go generate to generate API reference documentation.
