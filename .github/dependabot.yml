@@ -5,6 +5,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
     # Ignore K8 packages as these are done manually
     ignore:
       - dependency-name: "k8s.io/api"
@@ -20,7 +24,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      gh-actions-dependencies:
+        patterns:
+          - "*"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
