@@ -118,7 +118,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 			Power: computev1alpha1.PowerOn,
 			NetworkInterfaces: []computev1alpha1.NetworkInterface{
 				{
-					Name: "primary",
+					Name: "nic",
 					NetworkInterfaceSource: computev1alpha1.NetworkInterfaceSource{
 						Ephemeral: &computev1alpha1.EphemeralNetworkInterfaceSource{
 							NetworkInterfaceTemplate: &networkingv1alpha1.NetworkInterfaceTemplateSpec{
@@ -163,7 +163,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 	} else {
 		ironcoreMachine.Spec.Volumes = []computev1alpha1.Volume{
 			{
-				Name: "primary",
+				Name: "root",
 				VolumeSource: computev1alpha1.VolumeSource{
 					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
 						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
