@@ -74,12 +74,12 @@ var _ = Describe("Machine", func() {
 		),
 		Entry("no prefix name",
 			&v1alpha1.ProviderSpec{
-				PrefixName: "",
-				RootDisk:   &v1alpha1.RootDisk{},
+				PrefixNames: []string{},
+				RootDisk:    &v1alpha1.RootDisk{},
 			},
 			&corev1.Secret{},
 			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.prefixName"), "prefixName is required")),
+			ContainElement(field.Required(fldPath.Child("spec.prefixNames"), "prefixNames is required")),
 		),
 		Entry("invalid dns server ip",
 			&v1alpha1.ProviderSpec{
