@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
+
 	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
@@ -21,7 +23,6 @@ import (
 	"github.com/ironcore-dev/ironcore/api/common/v1alpha1"
 	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
-	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
 	networkingv1alpha1 "github.com/ironcore-dev/ironcore/api/networking/v1alpha1"
 	storagev1alpha1 "github.com/ironcore-dev/ironcore/api/storage/v1alpha1"
 	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
@@ -129,22 +130,6 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 									NetworkRef: corev1.LocalObjectReference{
 										Name: providerSpec.NetworkName,
 									},
-									IPFamilies: []corev1.IPFamily{corev1.IPv4Protocol},
-									IPs: []networkingv1alpha1.IPSource{
-										{
-											Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
-												PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
-													Spec: ipamv1alpha1.PrefixSpec{
-														// request single IP
-														PrefixLength: 32,
-														ParentRef: &corev1.LocalObjectReference{
-															Name: providerSpec.PrefixName,
-														},
-													},
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -156,6 +141,45 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 				Key:  ignitionSecretKey,
 			},
 		},
+	}
+	for _, prefixName := range providerSpec.PrefixNames {
+		prefix := &ipamv1alpha1.Prefix{}
+		if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: prefixName, Namespace: d.IroncoreNamespace}, prefix); err != nil {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("error getting prefix %s:%s", prefixName, err.Error()))
+		}
+		var machinePrefixLength int32 = 32
+		if prefix.Spec.IPFamily == corev1.IPv6Protocol {
+			machinePrefixLength = 128
+			nodePrefixIPv6 := networkingv1alpha1.PrefixSource{
+				Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
+					PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
+						Spec: ipamv1alpha1.PrefixSpec{
+							IPFamily:     corev1.IPv6Protocol,
+							PrefixLength: 112,
+							ParentRef:    &corev1.LocalObjectReference{Name: prefixName},
+						},
+					},
+				},
+			}
+			ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.Prefixes =
+				append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.Prefixes, nodePrefixIPv6)
+		}
+		ip := networkingv1alpha1.IPSource{
+			Ephemeral: &networkingv1alpha1.EphemeralPrefixSource{
+				PrefixTemplate: &ipamv1alpha1.PrefixTemplateSpec{
+					Spec: ipamv1alpha1.PrefixSpec{
+						PrefixLength: machinePrefixLength,
+						ParentRef: &corev1.LocalObjectReference{
+							Name: prefixName,
+						},
+					},
+				},
+			},
+		}
+		ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPs =
+			append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPs, ip)
+		ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPFamilies =
+			append(ironcoreMachine.Spec.NetworkInterfaces[0].NetworkInterfaceSource.Ephemeral.NetworkInterfaceTemplate.Spec.IPFamilies, prefix.Spec.IPFamily)
 	}
 
 	if providerSpec.RootDisk == nil {

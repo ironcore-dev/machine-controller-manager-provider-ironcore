@@ -14,7 +14,7 @@ var (
 		"machineClassName": "foo",
 		"machinePoolName":  "foo",
 		"networkName":      "my-network",
-		"prefixName":       "my-prefix",
+		"prefixNames":      []string{"my-prefix"},
 		"rootDisk": map[string]string{
 			"volumeClassName": "foo",
 			"size":            "10Gi",
