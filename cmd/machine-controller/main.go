@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 
+	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
+
 	"github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/scheme"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/client/metrics/prometheus" // for client metric registration
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/app"
@@ -71,6 +73,7 @@ func getIroncoreClientAndNamespace() (client.Client, string, error) {
 	utilruntime.Must(scheme.AddToScheme(s))
 	utilruntime.Must(computev1alpha1.AddToScheme(s))
 	utilruntime.Must(corev1.AddToScheme(s))
+	utilruntime.Must(ipamv1alpha1.AddToScheme(s))
 
 	ironcoreKubeconfigData, err := os.ReadFile(IroncoreKubeconfigPath)
 	if err != nil {
