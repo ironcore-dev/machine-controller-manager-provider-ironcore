@@ -157,7 +157,7 @@ var _ = Describe("CreateMachine", func() {
 				MachineClass: newMachineClass(v1alpha1.ProviderName, SampleProviderSpec),
 				Secret:       providerSecret,
 			})
-			g.Expect(err.Error()).To(ContainSubstring("invalid IP"))
+			g.Expect(err.Error()).To(ContainSubstring("ip is invalid"))
 		}).Should(Succeed())
 	})
 })
