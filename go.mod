@@ -8,7 +8,7 @@ require (
 	github.com/gardener/machine-controller-manager v0.60.0
 	github.com/imdario/mergo v0.3.16
 	github.com/ironcore-dev/controller-utils v0.11.0
-	github.com/ironcore-dev/ironcore v0.2.5-0.20260323151905-54f42846eddc
+	github.com/ironcore-dev/ironcore v0.3.0
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
 	github.com/spf13/pflag v1.0.10
