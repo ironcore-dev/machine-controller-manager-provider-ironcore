@@ -107,6 +107,11 @@ var _ = Describe("CreateMachine", func() {
 									corev1alpha1.ResourceStorage: resource.MustParse("10Gi"),
 								},
 								Image: "my-image",
+								DataSource: storagev1alpha1.VolumeDataSource{
+									OSImage: &storagev1alpha1.OSDataSource{
+										Image: "my-image",
+									},
+								},
 							},
 						},
 					},

@@ -183,6 +183,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 								Resources: corev1alpha1.ResourceList{
 									corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size,
 								},
+								//TODO remove once image field is removed from API spec
 								Image: providerSpec.Image,
 								DataSource: storagev1alpha1.VolumeDataSource{
 									OSImage: &storagev1alpha1.OSDataSource{
