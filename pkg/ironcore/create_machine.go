@@ -159,7 +159,16 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 	}
 
 	if providerSpec.RootDisk == nil {
-		ironcoreMachine.Spec.Image = providerSpec.Image
+		ironcoreMachine.Spec.Volumes = []computev1alpha1.Volume{
+			{
+				Name: "root",
+				VolumeSource: computev1alpha1.VolumeSource{
+					LocalDisk: &computev1alpha1.LocalDiskVolumeSource{
+						Image: providerSpec.Image,
+					},
+				},
+			},
+		}
 	} else {
 		ironcoreMachine.Spec.Volumes = []computev1alpha1.Volume{
 			{
@@ -174,7 +183,13 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 								Resources: corev1alpha1.ResourceList{
 									corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size,
 								},
+								//TODO remove once image field is removed from API spec
 								Image: providerSpec.Image,
+								DataSource: storagev1alpha1.VolumeDataSource{
+									OSImage: &storagev1alpha1.OSDataSource{
+										Image: providerSpec.Image,
+									},
+								},
 							},
 						},
 					},

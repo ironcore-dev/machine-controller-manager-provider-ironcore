@@ -107,6 +107,11 @@ var _ = Describe("CreateMachine", func() {
 									corev1alpha1.ResourceStorage: resource.MustParse("10Gi"),
 								},
 								Image: "my-image",
+								DataSource: storagev1alpha1.VolumeDataSource{
+									OSImage: &storagev1alpha1.OSDataSource{
+										Image: "my-image",
+									},
+								},
 							},
 						},
 					},
@@ -157,7 +162,7 @@ var _ = Describe("CreateMachine", func() {
 				MachineClass: newMachineClass(v1alpha1.ProviderName, SampleProviderSpec),
 				Secret:       providerSecret,
 			})
-			g.Expect(err.Error()).To(ContainSubstring("invalid IP"))
+			g.Expect(err.Error()).To(ContainSubstring("ip is invalid"))
 		}).Should(Succeed())
 	})
 })
