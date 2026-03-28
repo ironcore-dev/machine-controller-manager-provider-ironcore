@@ -29,7 +29,16 @@ import (
 var _ = Describe("CreateMachine", func() {
 	ns, providerSecret, drv := SetupTest()
 
-	It("should create a machine", func(ctx SpecContext) {
+	It("should create a machine with MachinePoolRef when pool exists by name", func(ctx SpecContext) {
+		By("creating a MachinePool named az1 (old model: zone = pool name)")
+		machinePool := &computev1alpha1.MachinePool{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "az1",
+			},
+		}
+		Expect(k8sClient.Create(ctx, machinePool)).To(Succeed())
+		DeferCleanup(k8sClient.Delete, machinePool)
+
 		By("creating machine")
 		machineName := "machine-0"
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
@@ -41,7 +50,7 @@ var _ = Describe("CreateMachine", func() {
 			NodeName:   machineName,
 		}))
 
-		By("ensuring that the ironcore machine has been created")
+		By("ensuring that the ironcore machine has MachinePoolRef set")
 		machine := &computev1alpha1.Machine{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: ns.Name,
@@ -56,6 +65,7 @@ var _ = Describe("CreateMachine", func() {
 			}),
 			HaveField("Spec.MachineClassRef", corev1.LocalObjectReference{Name: "machine-class"}),
 			HaveField("Spec.MachinePoolRef", &corev1.LocalObjectReference{Name: "az1"}),
+			HaveField("Spec.MachinePoolSelector", BeEmpty()),
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
 			HaveField("Spec.NetworkInterfaces", ContainElement(computev1alpha1.NetworkInterface{
 				Name: "nic",
@@ -164,5 +174,36 @@ var _ = Describe("CreateMachine", func() {
 			})
 			g.Expect(err.Error()).To(ContainSubstring("ip is invalid"))
 		}).Should(Succeed())
+	})
+
+	It("should create a machine with MachinePoolSelector when pool does not exist by name", func(ctx SpecContext) {
+		By("creating machine without a MachinePool named az1")
+		machineName := "machine-0"
+		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, testing.SampleProviderSpec),
+			Secret:       providerSecret,
+		})).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
+			NodeName:   machineName,
+		}))
+
+		By("ensuring that the ironcore machine has MachinePoolSelector with topology labels")
+		machine := &computev1alpha1.Machine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      machineName,
+			},
+		}
+
+		Eventually(Object(machine)).Should(SatisfyAll(
+			HaveField("Spec.MachineClassRef", corev1.LocalObjectReference{Name: "machine-class"}),
+			HaveField("Spec.MachinePoolRef", BeNil()),
+			HaveField("Spec.MachinePoolSelector", map[string]string{
+				string(commonv1alpha1.TopologyLabelZone):   "az1",
+				string(commonv1alpha1.TopologyLabelRegion): "foo",
+			}),
+			HaveField("Spec.Power", computev1alpha1.PowerOn),
+		))
 	})
 })
