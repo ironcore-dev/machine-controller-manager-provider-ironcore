@@ -18,7 +18,7 @@ import (
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/ironcore-dev/ironcore/api/common/v1alpha1"
+	commonv1alpha1 "github.com/ironcore-dev/ironcore/api/common/v1alpha1"
 	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
 	ipamv1alpha1 "github.com/ironcore-dev/ironcore/api/ipam/v1alpha1"
@@ -27,6 +27,7 @@ import (
 	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/validation"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/ignition"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 // CreateMachine handles a machine creation request
@@ -98,6 +99,32 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 		Data: ignitionData,
 	}
 
+	// Determine pool selection strategy: direct reference (old model) vs topology labels (new model).
+	// In the old model, the zone name was the pool name (1:1 logical pools).
+	// In the new model, multiple pools are grouped by topology labels.
+	zone := req.MachineClass.NodeTemplate.Zone
+	region := req.MachineClass.NodeTemplate.Region
+
+	var machinePoolRef *corev1.LocalObjectReference
+	var machinePoolSelector map[string]string
+
+	pool := &computev1alpha1.MachinePool{}
+	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, pool); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("error checking machine pool %q: %s", zone, err.Error()))
+		}
+		// Pool not found by name -> use topology label-based selection
+		machinePoolSelector = map[string]string{
+			string(commonv1alpha1.TopologyLabelZone): zone,
+		}
+		if region != "" {
+			machinePoolSelector[string(commonv1alpha1.TopologyLabelRegion)] = region
+		}
+	} else {
+		// Pool found by name -> old behavior (direct reference)
+		machinePoolRef = &corev1.LocalObjectReference{Name: zone}
+	}
+
 	ironcoreMachine := &computev1alpha1.Machine{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: computev1alpha1.SchemeGroupVersion.String(),
@@ -112,10 +139,9 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 			MachineClassRef: corev1.LocalObjectReference{
 				Name: req.MachineClass.NodeTemplate.InstanceType,
 			},
-			MachinePoolRef: &corev1.LocalObjectReference{
-				Name: req.MachineClass.NodeTemplate.Zone,
-			},
-			Power: computev1alpha1.PowerOn,
+			MachinePoolRef:      machinePoolRef,
+			MachinePoolSelector: machinePoolSelector,
+			Power:               computev1alpha1.PowerOn,
 			NetworkInterfaces: []computev1alpha1.NetworkInterface{
 				{
 					Name: "nic",
@@ -151,7 +177,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 					},
 				},
 			},
-			IgnitionRef: &v1alpha1.SecretKeySelector{
+			IgnitionRef: &commonv1alpha1.SecretKeySelector{
 				Name: ignitionSecret.Name,
 				Key:  ignitionSecretKey,
 			},
