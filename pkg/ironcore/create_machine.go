@@ -83,14 +83,14 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 		return nil, err
 	}
 
+	if err := d.IroncoreClient.Apply(ctx, ignitionSecretApplyConfig, client.FieldOwner(fieldOwner), client.ForceOwnership); err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to apply ignition secret for machine %s: %v", req.Machine.Name, err))
+	}
+
 	machineApplyConfig := d.buildMachineApplyConfig(ctx, req, providerSpec, ignitionSecretKey, machinePoolRef, machinePoolSelector)
 	if err := d.IroncoreClient.Apply(ctx, machineApplyConfig, client.FieldOwner(fieldOwner), client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ironcore machine: %s", err.Error()))
 
-	}
-
-	if err := d.IroncoreClient.Apply(ctx, ignitionSecretApplyConfig, client.FieldOwner(fieldOwner), client.ForceOwnership); err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to apply ignition secret for machine %s: %v", req.Machine.Name, err))
 	}
 
 	return &computev1alpha1.Machine{
