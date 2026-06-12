@@ -7,8 +7,8 @@ require (
 	github.com/coreos/butane v0.28.0
 	github.com/gardener/machine-controller-manager v0.60.0
 	github.com/imdario/mergo v0.3.16
-	github.com/ironcore-dev/controller-utils v0.11.1-0.20260521082229-5437e1aa60a3
-	github.com/ironcore-dev/ironcore v0.3.1-0.20260526070152-ddfd5b329c48
+	github.com/ironcore-dev/controller-utils v0.12.0
+	github.com/ironcore-dev/ironcore v0.4.1
 	github.com/onsi/ginkgo/v2 v2.29.0
 	github.com/onsi/gomega v1.41.0
 	github.com/spf13/pflag v1.0.10
@@ -93,8 +93,8 @@ require (
 	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/term v0.42.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
