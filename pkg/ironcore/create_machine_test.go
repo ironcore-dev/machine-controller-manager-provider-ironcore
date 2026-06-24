@@ -39,6 +39,15 @@ var _ = Describe("CreateMachine", func() {
 		Expect(k8sClient.Create(ctx, machinePool)).To(Succeed())
 		DeferCleanup(k8sClient.Delete, machinePool)
 
+		By("creating a VolumePool named az1")
+		volumePool := &storagev1alpha1.VolumePool{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "az1",
+			},
+		}
+		Expect(k8sClient.Create(ctx, volumePool)).To(Succeed())
+		DeferCleanup(k8sClient.Delete, volumePool)
+
 		By("creating machine")
 		machineName := "machine-0"
 		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
@@ -112,6 +121,9 @@ var _ = Describe("CreateMachine", func() {
 							Spec: storagev1alpha1.VolumeSpec{
 								VolumeClassRef: &corev1.LocalObjectReference{
 									Name: "foo",
+								},
+								VolumePoolRef: &corev1.LocalObjectReference{
+									Name: "az1",
 								},
 								Resources: corev1alpha1.ResourceList{
 									corev1alpha1.ResourceStorage: resource.MustParse("10Gi"),
@@ -204,6 +216,70 @@ var _ = Describe("CreateMachine", func() {
 				string(commonv1alpha1.TopologyLabelRegion): "foo",
 			}),
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
+			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
+				Name:   "root",
+				Device: ptr.To("oda"),
+				VolumeSource: computev1alpha1.VolumeSource{
+					Ephemeral: &computev1alpha1.EphemeralVolumeSource{
+						VolumeTemplate: &storagev1alpha1.VolumeTemplateSpec{
+							Spec: storagev1alpha1.VolumeSpec{
+								VolumeClassRef: &corev1.LocalObjectReference{
+									Name: "foo",
+								},
+								VolumePoolSelector: map[string]string{
+									string(commonv1alpha1.TopologyLabelZone):   "az1",
+									string(commonv1alpha1.TopologyLabelRegion): "foo",
+								},
+								Resources: corev1alpha1.ResourceList{
+									corev1alpha1.ResourceStorage: resource.MustParse("10Gi"),
+								},
+								Image: "my-image",
+								DataSource: storagev1alpha1.VolumeDataSource{
+									OSImage: &storagev1alpha1.OSDataSource{
+										Image: "my-image",
+									},
+								},
+							},
+						},
+					},
+				},
+			})),
 		))
+	})
+
+	It("should create a machine with a local disk when rootDisk is not set", func(ctx SpecContext) {
+		By("creating machine with a provider spec without rootDisk")
+		providerSpecWithoutRootDisk := testing.Copy(testing.SampleProviderSpec)
+		delete(providerSpecWithoutRootDisk, "rootDisk")
+
+		machineName := "machine-0"
+		Expect((*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, providerSpecWithoutRootDisk),
+			Secret:       providerSecret,
+		})).To(Equal(&driver.CreateMachineResponse{
+			ProviderID: fmt.Sprintf("%s://%s/machine-%d", v1alpha1.ProviderName, ns.Name, 0),
+			NodeName:   machineName,
+		}))
+
+		By("ensuring that the ironcore machine has a local disk volume")
+		machine := &computev1alpha1.Machine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      machineName,
+			},
+		}
+
+		Eventually(Object(machine)).Should(
+			HaveField("Spec.Volumes", ContainElement(computev1alpha1.Volume{
+				Name:   "root",
+				Device: ptr.To("oda"),
+				VolumeSource: computev1alpha1.VolumeSource{
+					LocalDisk: &computev1alpha1.LocalDiskVolumeSource{
+						Image: "my-image",
+					},
+				},
+			})),
+		)
 	})
 })

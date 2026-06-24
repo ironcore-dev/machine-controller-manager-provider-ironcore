@@ -28,6 +28,7 @@ import (
 	commonv1alpha1 "github.com/ironcore-dev/ironcore/api/common/v1alpha1"
 	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
+	storagev1alpha1 "github.com/ironcore-dev/ironcore/api/storage/v1alpha1"
 	apiv1alpha1 "github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/validation"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/ignition"
@@ -78,7 +79,13 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 		return nil, err
 	}
 
-	machinePoolRef, machinePoolSelector, err := d.resolveMachinePool(ctx, req.MachineClass.NodeTemplate.Zone, req.MachineClass.NodeTemplate.Region)
+	zone, region := req.MachineClass.NodeTemplate.Zone, req.MachineClass.NodeTemplate.Region
+	machinePoolRef, machinePoolSelector, err := d.resolveMachinePool(ctx, zone, region)
+	if err != nil {
+		return nil, err
+	}
+
+	volumeApplyConfig, err := d.buildVolumeApplyConfig(ctx, providerSpec, zone, region)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +94,7 @@ func (d *ironcoreDriver) applyIronCoreMachine(ctx context.Context, req *driver.C
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to apply ignition secret for machine %s: %v", req.Machine.Name, err))
 	}
 
-	machineApplyConfig := d.buildMachineApplyConfig(ctx, req, providerSpec, ignitionSecretKey, machinePoolRef, machinePoolSelector)
+	machineApplyConfig := d.buildMachineApplyConfig(ctx, req, providerSpec, ignitionSecretKey, machinePoolRef, machinePoolSelector, volumeApplyConfig)
 	if err := d.IroncoreClient.Apply(ctx, machineApplyConfig, client.FieldOwner(fieldOwner), client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ironcore machine: %s", err.Error()))
 
@@ -135,30 +142,34 @@ func (d *ironcoreDriver) buildIgnitionSecretApplyConfig(ctx context.Context, req
 	return secret, ignitionSecretKey, nil
 }
 
-func (d *ironcoreDriver) resolveMachinePool(ctx context.Context, zone string, region string) (*corev1.LocalObjectReference, map[string]string, error) {
-	pool := &computev1alpha1.MachinePool{}
-
-	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, pool); err != nil {
+func (d *ironcoreDriver) resolvePool(ctx context.Context, obj client.Object, poolKind, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, obj); err != nil {
 		if !apierrors.IsNotFound(err) {
-			return nil, nil, status.Error(codes.Internal, fmt.Sprintf("error checking machine pool %q: %s", zone, err.Error()))
+			return nil, nil, status.Error(codes.Internal, fmt.Sprintf("error checking %s %q: %s", poolKind, zone, err.Error()))
 		}
 
-		machinePoolSelector := map[string]string{
+		selector := map[string]string{
 			string(commonv1alpha1.TopologyLabelZone): zone,
 		}
 		if region != "" {
-			machinePoolSelector[string(commonv1alpha1.TopologyLabelRegion)] = region
+			selector[string(commonv1alpha1.TopologyLabelRegion)] = region
 		}
 
-		return nil, machinePoolSelector, nil
+		return nil, selector, nil
 	}
 
 	return &corev1.LocalObjectReference{Name: zone}, nil, nil
 }
 
-func (d *ironcoreDriver) buildMachineApplyConfig(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec, ignitionSecretKey string, machinePoolRef *corev1.LocalObjectReference, machinePoolSelector map[string]string) *computev1alpha1ac.MachineApplyConfiguration {
-	volumes := d.buildMachineVolumes(providerSpec)
+func (d *ironcoreDriver) resolveMachinePool(ctx context.Context, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	return d.resolvePool(ctx, &computev1alpha1.MachinePool{}, "machine pool", zone, region)
+}
 
+func (d *ironcoreDriver) resolveVolumePool(ctx context.Context, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	return d.resolvePool(ctx, &storagev1alpha1.VolumePool{}, "volume pool", zone, region)
+}
+
+func (d *ironcoreDriver) buildMachineApplyConfig(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec, ignitionSecretKey string, machinePoolRef *corev1.LocalObjectReference, machinePoolSelector map[string]string, volume *computev1alpha1ac.VolumeApplyConfiguration) *computev1alpha1ac.MachineApplyConfiguration {
 	spec := computev1alpha1ac.MachineSpec().
 		WithMachineClassRef(corev1.LocalObjectReference{Name: req.MachineClass.NodeTemplate.InstanceType}).
 		WithPower(computev1alpha1.PowerOn).
@@ -188,7 +199,7 @@ func (d *ironcoreDriver) buildMachineApplyConfig(ctx context.Context, req *drive
 			Name: d.getIgnitionNameForMachine(ctx, req.Machine.Name),
 			Key:  ignitionSecretKey,
 		}).
-		WithVolumes(volumes...)
+		WithVolumes([]*computev1alpha1ac.VolumeApplyConfiguration{volume}...)
 
 	if machinePoolRef != nil {
 		spec.WithMachinePoolRef(corev1.LocalObjectReference{Name: machinePoolRef.Name})
@@ -203,33 +214,42 @@ func (d *ironcoreDriver) buildMachineApplyConfig(ctx context.Context, req *drive
 		WithSpec(spec)
 }
 
-func (d *ironcoreDriver) buildMachineVolumes(providerSpec *apiv1alpha1.ProviderSpec) []*computev1alpha1ac.VolumeApplyConfiguration {
+func (d *ironcoreDriver) buildVolumeApplyConfig(ctx context.Context, providerSpec *apiv1alpha1.ProviderSpec, zone, region string) (*computev1alpha1ac.VolumeApplyConfiguration, error) {
+	vol := computev1alpha1ac.Volume().WithName("root")
 	if providerSpec.RootDisk == nil {
-		return []*computev1alpha1ac.VolumeApplyConfiguration{computev1alpha1ac.Volume().
-			WithName("root").
-			WithLocalDisk(computev1alpha1ac.LocalDiskVolumeSource().
-				WithImage(providerSpec.Image),
-			),
-		}
+		return vol.WithLocalDisk(computev1alpha1ac.LocalDiskVolumeSource().
+			WithImage(providerSpec.Image),
+		), nil
 	}
 
-	return []*computev1alpha1ac.VolumeApplyConfiguration{computev1alpha1ac.Volume().
-		WithName("root").
-		WithEphemeral(computev1alpha1ac.EphemeralVolumeSource().
-			WithVolumeTemplate(storagev1alpha1ac.VolumeTemplateSpec().
-				WithSpec(storagev1alpha1ac.VolumeSpec().
-					WithVolumeClassRef(corev1.LocalObjectReference{Name: providerSpec.RootDisk.VolumeClassName}).
-					WithResources(corev1alpha1.ResourceList{corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size}).
-					WithImage(providerSpec.Image).
-					WithDataSource(storagev1alpha1ac.VolumeDataSource().
-						WithOSImage(storagev1alpha1ac.OSDataSource().
-							WithImage(providerSpec.Image),
-						),
-					),
-				),
+	spec := storagev1alpha1ac.VolumeSpec().
+		WithVolumeClassRef(corev1.LocalObjectReference{Name: providerSpec.RootDisk.VolumeClassName}).
+		WithResources(corev1alpha1.ResourceList{corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size}).
+		WithImage(providerSpec.Image).
+		WithDataSource(storagev1alpha1ac.VolumeDataSource().
+			WithOSImage(storagev1alpha1ac.OSDataSource().
+				WithImage(providerSpec.Image),
 			),
-		),
+		)
+
+	volumePoolRef, volumePoolSelector, err := d.resolveVolumePool(ctx, zone, region)
+	if err != nil {
+		return nil, err
 	}
+
+	if volumePoolRef != nil {
+		spec.WithVolumePoolRef(corev1.LocalObjectReference{Name: volumePoolRef.Name})
+	}
+
+	if volumePoolSelector != nil {
+		spec.WithVolumePoolSelector(volumePoolSelector)
+	}
+
+	return vol.WithEphemeral(computev1alpha1ac.EphemeralVolumeSource().
+		WithVolumeTemplate(storagev1alpha1ac.VolumeTemplateSpec().
+			WithSpec(spec),
+		),
+	), nil
 }
 
 // getIgnitionKeyOrDefault checks if key is empty otherwise return default ingintion key
