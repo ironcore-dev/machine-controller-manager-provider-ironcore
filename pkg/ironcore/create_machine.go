@@ -142,46 +142,31 @@ func (d *ironcoreDriver) buildIgnitionSecretApplyConfig(ctx context.Context, req
 	return secret, ignitionSecretKey, nil
 }
 
-func (d *ironcoreDriver) resolveMachinePool(ctx context.Context, zone string, region string) (*corev1.LocalObjectReference, map[string]string, error) {
-	pool := &computev1alpha1.MachinePool{}
-
-	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, pool); err != nil {
+func (d *ironcoreDriver) resolvePool(ctx context.Context, obj client.Object, poolKind, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, obj); err != nil {
 		if !apierrors.IsNotFound(err) {
-			return nil, nil, status.Error(codes.Internal, fmt.Sprintf("error checking machine pool %q: %s", zone, err.Error()))
+			return nil, nil, status.Error(codes.Internal, fmt.Sprintf("error checking %s %q: %s", poolKind, zone, err.Error()))
 		}
 
-		machinePoolSelector := map[string]string{
+		selector := map[string]string{
 			string(commonv1alpha1.TopologyLabelZone): zone,
 		}
 		if region != "" {
-			machinePoolSelector[string(commonv1alpha1.TopologyLabelRegion)] = region
+			selector[string(commonv1alpha1.TopologyLabelRegion)] = region
 		}
 
-		return nil, machinePoolSelector, nil
+		return nil, selector, nil
 	}
 
 	return &corev1.LocalObjectReference{Name: zone}, nil, nil
 }
 
-func (d *ironcoreDriver) resolveVolumePool(ctx context.Context, zone string, region string) (*corev1.LocalObjectReference, map[string]string, error) {
-	pool := &storagev1alpha1.VolumePool{}
+func (d *ironcoreDriver) resolveMachinePool(ctx context.Context, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	return d.resolvePool(ctx, &computev1alpha1.MachinePool{}, "machine pool", zone, region)
+}
 
-	if err := d.IroncoreClient.Get(ctx, client.ObjectKey{Name: zone}, pool); err != nil {
-		if !apierrors.IsNotFound(err) {
-			return nil, nil, status.Error(codes.Internal, fmt.Sprintf("error checking volume pool %q: %s", zone, err.Error()))
-		}
-
-		volumePoolSelector := map[string]string{
-			string(commonv1alpha1.TopologyLabelZone): zone,
-		}
-		if region != "" {
-			volumePoolSelector[string(commonv1alpha1.TopologyLabelRegion)] = region
-		}
-
-		return nil, volumePoolSelector, nil
-	}
-
-	return &corev1.LocalObjectReference{Name: zone}, nil, nil
+func (d *ironcoreDriver) resolveVolumePool(ctx context.Context, zone, region string) (*corev1.LocalObjectReference, map[string]string, error) {
+	return d.resolvePool(ctx, &storagev1alpha1.VolumePool{}, "volume pool", zone, region)
 }
 
 func (d *ironcoreDriver) buildMachineApplyConfig(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec, ignitionSecretKey string, machinePoolRef *corev1.LocalObjectReference, machinePoolSelector map[string]string, volume *computev1alpha1ac.VolumeApplyConfiguration) *computev1alpha1ac.MachineApplyConfiguration {
