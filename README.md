@@ -71,3 +71,9 @@ Following are the basic principles kept in mind while developing the external pl
         ```bash
         kubectl delete -f kubernetes/machine.yaml
         kubectl delete -f kubernetes/machine-deployment.yaml
+
+## Pool Scheduling
+
+When the `MachineClass` `NodeTemplate` specifies a `region` and `zone`, the provider uses topology-aware
+scheduling to determine both the `MachinePool` and (when `rootDisk` is set) the `VolumePool`.
+The `VolumePool` is assumed to be zone-local, so the same topology labels are applied to both.
