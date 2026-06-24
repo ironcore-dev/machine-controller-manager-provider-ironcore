@@ -17,6 +17,7 @@ import (
 	"github.com/ironcore-dev/controller-utils/modutils"
 	computev1alpha1 "github.com/ironcore-dev/ironcore/api/compute/v1alpha1"
 	corev1alpha1 "github.com/ironcore-dev/ironcore/api/core/v1alpha1"
+	storagev1alpha1 "github.com/ironcore-dev/ironcore/api/storage/v1alpha1"
 	envtestutils "github.com/ironcore-dev/ironcore/utils/envtest"
 	"github.com/ironcore-dev/ironcore/utils/envtest/apiserver"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore/pkg/api/v1alpha1"
@@ -97,6 +98,7 @@ var _ = BeforeSuite(func() {
 
 	DeferCleanup(envtestutils.StopWithExtensions, testEnv, testEnvExt)
 	Expect(computev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(storagev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 	Expect(gardenermachinev1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	// Init package-level k8sClient
