@@ -2,9 +2,6 @@ name: Lint Golang Codebase
 
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
 jobs:
   golangci:
     name: lint
