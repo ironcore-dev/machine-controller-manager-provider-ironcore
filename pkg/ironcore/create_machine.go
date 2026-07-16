@@ -220,7 +220,6 @@ func (d *ironcoreDriver) buildMachineVolumes(providerSpec *apiv1alpha1.ProviderS
 				WithSpec(storagev1alpha1ac.VolumeSpec().
 					WithVolumeClassRef(corev1.LocalObjectReference{Name: providerSpec.RootDisk.VolumeClassName}).
 					WithResources(corev1alpha1.ResourceList{corev1alpha1.ResourceStorage: providerSpec.RootDisk.Size}).
-					WithImage(providerSpec.Image).
 					WithDataSource(storagev1alpha1ac.VolumeDataSource().
 						WithOSImage(storagev1alpha1ac.OSDataSource().
 							WithImage(providerSpec.Image),
