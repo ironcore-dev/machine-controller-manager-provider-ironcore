@@ -40,6 +40,18 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.Size.IsZero() {
+		allErrs = append(allErrs, field.Required(fldPath.Child("rootDisk").Child("size"), "size is required when volumeClassName is not set"))
+	}
+
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.Size.Sign() < 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("rootDisk").Child("size"), spec.RootDisk.Size.String(), "must be greater than zero"))
+	}
+
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.VolumePoolName != "" {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("rootDisk").Child("volumePoolName"), "volumePoolName requires volumeClassName"))
+	}
+
 	if spec.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image is required"))
 	}
