@@ -40,16 +40,8 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.Size.IsZero() {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootDisk").Child("size"), "size is required when volumeClassName is not set"))
-	}
-
-	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.Size.Sign() < 0 {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("rootDisk").Child("size"), spec.RootDisk.Size.String(), "must be greater than zero"))
-	}
-
-	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" && spec.RootDisk.VolumePoolName != "" {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("rootDisk").Child("volumePoolName"), "volumePoolName requires volumeClassName"))
+	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
+		allErrs = append(allErrs, validateLocalRootDisk(spec.RootDisk, fldPath.Child("rootDisk"))...)
 	}
 
 	if spec.Image == "" {
@@ -68,6 +60,26 @@ func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *fiel
 		if !netip.Addr.IsValid(ip) {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("dnsServers").Index(i), ip, "ip is invalid"))
 		}
+	}
+
+	return allErrs
+}
+
+// validateLocalRootDisk validates a root disk without a volume class, which becomes a local disk of
+// the Machine instead of a Volume.
+func validateLocalRootDisk(rootDisk *v1alpha1.RootDisk, fldPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if rootDisk.Size.IsZero() {
+		allErrs = append(allErrs, field.Required(fldPath.Child("size"), "size is required when volumeClassName is not set"))
+	}
+
+	if rootDisk.Size.Sign() < 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("size"), rootDisk.Size.String(), "must be greater than zero"))
+	}
+
+	if rootDisk.VolumePoolName != "" {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("volumePoolName"), "volumePoolName requires volumeClassName"))
 	}
 
 	return allErrs

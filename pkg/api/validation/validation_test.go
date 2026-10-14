@@ -55,55 +55,45 @@ var _ = Describe("Machine", func() {
 			ContainElement(field.Required(fldPath.Child("spec.image"), "image is required")),
 		),
 		Entry("rootDisk with size and no volumeClassName is valid",
-			&v1alpha1.ProviderSpec{
-				Image:       "my-image",
-				NetworkName: "my-network",
-				PrefixName:  "my-prefix",
-				RootDisk: &v1alpha1.RootDisk{
-					Size: resource.MustParse("10Gi"),
-				},
-			},
-			&corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}},
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size: resource.MustParse("10Gi"),
+			}),
+			newSecret(),
 			fldPath,
 			BeEmpty(),
 		),
 		Entry("rootDisk without size or volumeClassName",
-			&v1alpha1.ProviderSpec{
-				Image:       "foo-image",
-				NetworkName: "bar-network",
-				PrefixName:  "baz-prefix",
-				RootDisk:    &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}},
+			newProviderSpec(&v1alpha1.RootDisk{}),
+			newSecret(),
 			fldPath,
 			ConsistOf(field.Required(fldPath.Child("spec.rootDisk.size"), "size is required when volumeClassName is not set")),
 		),
 		Entry("rootDisk with negative size and no volumeClassName",
-			&v1alpha1.ProviderSpec{
-				Image:       "foo-image",
-				NetworkName: "bar-network",
-				PrefixName:  "baz-prefix",
-				RootDisk: &v1alpha1.RootDisk{
-					Size: resource.MustParse("-1Gi"),
-				},
-			},
-			&corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}},
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size: resource.MustParse("-1Gi"),
+			}),
+			newSecret(),
 			fldPath,
 			ConsistOf(field.Invalid(fldPath.Child("spec.rootDisk.size"), "-1Gi", "must be greater than zero")),
 		),
 		Entry("rootDisk with volumePoolName and no volumeClassName",
-			&v1alpha1.ProviderSpec{
-				Image:       "foo-image",
-				NetworkName: "bar-network",
-				PrefixName:  "baz-prefix",
-				RootDisk: &v1alpha1.RootDisk{
-					Size:           resource.MustParse("10Gi"),
-					VolumePoolName: "bar",
-				},
-			},
-			&corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}},
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size:           resource.MustParse("10Gi"),
+				VolumePoolName: "bar",
+			}),
+			newSecret(),
 			fldPath,
 			ConsistOf(field.Forbidden(fldPath.Child("spec.rootDisk.volumePoolName"), "volumePoolName requires volumeClassName")),
+		),
+		Entry("rootDisk with volumeClassName, size and volumePoolName is valid",
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size:            resource.MustParse("10Gi"),
+				VolumeClassName: "foo",
+				VolumePoolName:  "bar",
+			}),
+			newSecret(),
+			fldPath,
+			BeEmpty(),
 		),
 		Entry("no network name",
 			&v1alpha1.ProviderSpec{
@@ -134,3 +124,17 @@ var _ = Describe("Machine", func() {
 		),
 	)
 })
+
+// newProviderSpec returns a spec that is valid except for the given root disk.
+func newProviderSpec(rootDisk *v1alpha1.RootDisk) *v1alpha1.ProviderSpec {
+	return &v1alpha1.ProviderSpec{
+		Image:       "foo-image",
+		NetworkName: "bar-network",
+		PrefixName:  "baz-prefix",
+		RootDisk:    rootDisk,
+	}
+}
+
+func newSecret() *corev1.Secret {
+	return &corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}}
+}
