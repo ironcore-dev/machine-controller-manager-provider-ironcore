@@ -205,4 +205,37 @@ var _ = Describe("CreateMachine", func() {
 			HaveField("Spec.Power", computev1alpha1.PowerOn),
 		))
 	})
+
+	It("should create a machine booting from a local disk when no rootDisk set", func(ctx SpecContext) {
+		By("creating a machine with no rootDisk in spec")
+		providerSpec := testing.Copy(testing.SampleProviderSpec)
+		delete(providerSpec, "rootDisk")
+
+		expectedName := "machine-0"
+		response, err := (*drv).CreateMachine(ctx, &driver.CreateMachineRequest{
+			Machine:      newMachine(ns, "machine", -1, nil),
+			MachineClass: newMachineClass(v1alpha1.ProviderName, providerSpec),
+			Secret:       providerSecret,
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(response.NodeName).To(Equal(expectedName))
+
+		By("ensuring the root volume is unsized local disk from the image")
+		machine := &computev1alpha1.Machine{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: ns.Name,
+				Name:      expectedName,
+			},
+		}
+
+		Eventually(Object(machine)).Should(HaveField("Spec.Volumes", ConsistOf(computev1alpha1.Volume{
+			Name:   "root",
+			Device: new("oda"),
+			VolumeSource: computev1alpha1.VolumeSource{
+				LocalDisk: &computev1alpha1.LocalDiskVolumeSource{
+					Image: "my-image",
+				},
+			},
+		})))
+	})
 })
