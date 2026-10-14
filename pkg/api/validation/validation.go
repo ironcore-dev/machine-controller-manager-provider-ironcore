@@ -40,10 +40,6 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 func validateIroncoreMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootDisk").Child("volumeClassName"), "volumeClassName is required"))
-	}
-
 	if spec.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image is required"))
 	}
