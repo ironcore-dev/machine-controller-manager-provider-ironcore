@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -53,15 +54,18 @@ var _ = Describe("Machine", func() {
 			fldPath,
 			ContainElement(field.Required(fldPath.Child("spec.image"), "image is required")),
 		),
-		Entry("no volumeclass name",
+		Entry("rootDisk with size and no volumeClassName is valid",
 			&v1alpha1.ProviderSpec{
+				Image:       "my-image",
+				NetworkName: "my-network",
+				PrefixName:  "my-prefix",
 				RootDisk: &v1alpha1.RootDisk{
-					VolumeClassName: "",
+					Size: resource.MustParse("10Gi"),
 				},
 			},
-			&corev1.Secret{},
+			&corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}},
 			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.rootDisk.volumeClassName"), "volumeClassName is required")),
+			BeEmpty(),
 		),
 		Entry("no network name",
 			&v1alpha1.ProviderSpec{
