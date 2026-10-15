@@ -118,11 +118,11 @@ GOIMPORTS ?= $(LOCALBIN)/goimports
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v5.5.0
+KUSTOMIZE_VERSION ?= v5.8.1
 ADDLICENSE_VERSION ?= v1.1.1
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= v0.3.0
-GOIMPORTS_VERSION ?= v0.43.0
-GOLANGCI_LINT_VERSION ?= v2.11
+GOIMPORTS_VERSION ?= v0.49.0
+GOLANGCI_LINT_VERSION ?= v2.14
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
 #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)

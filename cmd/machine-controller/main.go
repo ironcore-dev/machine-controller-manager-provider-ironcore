@@ -60,10 +60,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := app.Run(s, drv); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
+	err = app.Run(s, drv)
+	_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+	os.Exit(1)
 }
 
 func getIroncoreClientAndNamespace() (client.Client, string, error) {
