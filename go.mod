@@ -11,7 +11,7 @@ require (
 	github.com/ironcore-dev/ironcore v0.8.1-0.20261008070126-308a8977709e
 	github.com/onsi/ginkgo/v2 v2.33.1
 	github.com/onsi/gomega v1.44.0
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	go.uber.org/zap v1.28.0
 	k8s.io/api v0.37.0
 	k8s.io/apimachinery v0.37.0
