@@ -150,7 +150,9 @@ map[string]string
 <a href="#?id=%23settings.gardener.cloud%2fv1alpha1.ProviderSpec">ProviderSpec</a>)
 </p>
 <p>
-<p>RootDisk defines the root disk properties of the Machine.</p>
+<p>RootDisk defines the root disk properties of the Machine.
+With VolumeClassName set, the root disk is an ephemeral Volume of that class, populated from the image.
+Otherwise the root disk is a local disk of the image, with Size as its sizeLimit.</p>
 </p>
 <table>
 <thead>
@@ -173,7 +175,8 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 </em>
 </td>
 <td>
-<p>Size defines the volume size of the root disk.</p>
+<p>Size defines the volume size of the root disk.
+Required if VolumeClassName is empty.</p>
 </td>
 </tr>
 <tr>
@@ -186,7 +189,8 @@ string
 </em>
 </td>
 <td>
-<p>VolumeClassName defines which volume class to use for the root disk.</p>
+<p>VolumeClassName defines which volume class to use for the root disk.
+If empty, the root disk is a local disk.</p>
 </td>
 </tr>
 <tr>
@@ -199,7 +203,8 @@ string
 </em>
 </td>
 <td>
-<p>VolumePoolName defines on which VolumePool a Volume should be scheduled.</p>
+<p>VolumePoolName defines on which VolumePool a Volume should be scheduled.
+Must be empty if VolumeClassName is empty.</p>
 </td>
 </tr>
 </tbody>

@@ -41,11 +41,16 @@ type ProviderSpec struct {
 }
 
 // RootDisk defines the root disk properties of the Machine.
+// With VolumeClassName set, the root disk is an ephemeral Volume of that class, populated from the image.
+// Otherwise the root disk is a local disk of the image, with Size as its sizeLimit.
 type RootDisk struct {
 	// Size defines the volume size of the root disk.
+	// Required if VolumeClassName is empty.
 	Size resource.Quantity `json:"size"`
 	// VolumeClassName defines which volume class to use for the root disk.
+	// If empty, the root disk is a local disk.
 	VolumeClassName string `json:"volumeClassName"`
 	// VolumePoolName defines on which VolumePool a Volume should be scheduled.
+	// Must be empty if VolumeClassName is empty.
 	VolumePoolName string `json:"volumePoolName,omitempty"`
 }

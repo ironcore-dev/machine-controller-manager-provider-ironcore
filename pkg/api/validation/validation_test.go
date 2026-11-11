@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -53,15 +54,46 @@ var _ = Describe("Machine", func() {
 			fldPath,
 			ContainElement(field.Required(fldPath.Child("spec.image"), "image is required")),
 		),
-		Entry("no volumeclass name",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{
-					VolumeClassName: "",
-				},
-			},
-			&corev1.Secret{},
+		Entry("rootDisk with size and no volumeClassName is valid",
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size: resource.MustParse("10Gi"),
+			}),
+			newSecret(),
 			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.rootDisk.volumeClassName"), "volumeClassName is required")),
+			BeEmpty(),
+		),
+		Entry("rootDisk without size or volumeClassName",
+			newProviderSpec(&v1alpha1.RootDisk{}),
+			newSecret(),
+			fldPath,
+			ConsistOf(field.Required(fldPath.Child("spec.rootDisk.size"), "size is required when volumeClassName is not set")),
+		),
+		Entry("rootDisk with negative size and no volumeClassName",
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size: resource.MustParse("-1Gi"),
+			}),
+			newSecret(),
+			fldPath,
+			ConsistOf(field.Invalid(fldPath.Child("spec.rootDisk.size"), "-1Gi", "must be greater than zero")),
+		),
+		Entry("rootDisk with volumePoolName and no volumeClassName",
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size:           resource.MustParse("10Gi"),
+				VolumePoolName: "bar",
+			}),
+			newSecret(),
+			fldPath,
+			ConsistOf(field.Forbidden(fldPath.Child("spec.rootDisk.volumePoolName"), "volumePoolName requires volumeClassName")),
+		),
+		Entry("rootDisk with volumeClassName, size and volumePoolName is valid",
+			newProviderSpec(&v1alpha1.RootDisk{
+				Size:            resource.MustParse("10Gi"),
+				VolumeClassName: "foo",
+				VolumePoolName:  "bar",
+			}),
+			newSecret(),
+			fldPath,
+			BeEmpty(),
 		),
 		Entry("no network name",
 			&v1alpha1.ProviderSpec{
@@ -92,3 +124,17 @@ var _ = Describe("Machine", func() {
 		),
 	)
 })
+
+// newProviderSpec returns a spec that is valid except for the given root disk.
+func newProviderSpec(rootDisk *v1alpha1.RootDisk) *v1alpha1.ProviderSpec {
+	return &v1alpha1.ProviderSpec{
+		Image:       "foo-image",
+		NetworkName: "bar-network",
+		PrefixName:  "baz-prefix",
+		RootDisk:    rootDisk,
+	}
+}
+
+func newSecret() *corev1.Secret {
+	return &corev1.Secret{Data: map[string][]byte{"userData": []byte("abcd")}}
+}

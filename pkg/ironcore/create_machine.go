@@ -213,6 +213,16 @@ func (d *ironcoreDriver) buildMachineVolumes(providerSpec *apiv1alpha1.ProviderS
 		}
 	}
 
+	if providerSpec.RootDisk.VolumeClassName == "" {
+		return []*computev1alpha1ac.VolumeApplyConfiguration{computev1alpha1ac.Volume().
+			WithName("root").
+			WithLocalDisk(computev1alpha1ac.LocalDiskVolumeSource().
+				WithImage(providerSpec.Image).
+				WithSizeLimit(providerSpec.RootDisk.Size),
+			),
+		}
+	}
+
 	return []*computev1alpha1ac.VolumeApplyConfiguration{computev1alpha1ac.Volume().
 		WithName("root").
 		WithEphemeral(computev1alpha1ac.EphemeralVolumeSource().
